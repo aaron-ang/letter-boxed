@@ -4,11 +4,15 @@ export default class Dictionary {
   constructor(fileName: string) {
     this.#contents = new Map<string, boolean>();
     const reader = new FileReader();
-    let text = ""
-    reader.addEventListener("load", () => {
-      // this will then display a text file
-      text = reader.result as string;
-    }, false);
+    let text = "";
+    reader.addEventListener(
+      "load",
+      () => {
+        // this will then display a text file
+        text = reader.result as string;
+      },
+      false
+    );
     const textByLine = text.split("\n");
     textByLine.forEach((word) => this.#add(word));
   }
@@ -51,7 +55,7 @@ export default class Dictionary {
       return false;
     } else {
       s = s.toLowerCase();
-      return this.#contents.has(s) && this.#contents.get(s) as boolean;
+      return this.#contents.has(s) && (this.#contents.get(s) as boolean);
     }
   }
 }

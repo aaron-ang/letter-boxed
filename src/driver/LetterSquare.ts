@@ -45,7 +45,7 @@ export default class LetterSquare {
   }
 
   get words(): string[] {
-    return this.#words
+    return this.#words;
   }
 
   /*
@@ -235,7 +235,7 @@ export default class LetterSquare {
       }
       maxWords++;
     }
-    
+
     console.log(
       "No solution found using up to " + LetterSquare.MOST_WORDS + " words."
     );
