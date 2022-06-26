@@ -1,3 +1,8 @@
+/*
+ * LetterSquare - represents the state of a letter-square puzzle,
+ * and solves it using recursive backtracking.
+ * 
+ */
 import Dictionary from "./Dictionary";
 
 export default class LetterSquare {
@@ -196,8 +201,8 @@ export default class LetterSquare {
       const currLetter = this.#letters[i];
       // Check if valid to add letter
       if (this.#isValid(currLetter, wordNum, charNum)) {
-        // Expand current word in solution by adding one letter
-        this.#addLetter(currLetter, wordNum);
+        // Expand current word in solution by adding one letter (delay 300ms)
+        setTimeout(() => this.#addLetter(currLetter, wordNum), 300);
         if (this.#solveRB(wordNum, charNum + 1, maxWords)) {
           return true;
         }

@@ -1,20 +1,24 @@
+/*
+ * Dictionary - represents a collection of English words and word prefixes.
+ * For each full word that is added, all prefixes of that word are also included.
+ * For example, adding the full word "puzzle" also adds the following
+ * prefixes: "p", "pu", "puz", "puzz", and "puzzl".
+ *
+ */
 export default class Dictionary {
   #contents: Map<string, boolean>;
 
   constructor(fileName: string) {
     this.#contents = new Map<string, boolean>();
-    const reader = new FileReader();
-    let text = "";
-    reader.addEventListener(
-      "load",
-      () => {
-        // this will then display a text file
-        text = reader.result as string;
-      },
-      false
-    );
-    const textByLine = text.split("\n");
-    textByLine.forEach((word) => this.#add(word));
+    fetch(fileName)
+      .then((res) => res.text())
+      .then((text) => text.split("\n"))
+      .then((arr) => arr.forEach((word) => this.#add(word.trim())))
+      .catch((err: Error) => console.log(err));
+  }
+
+  get contents(): Map<string, boolean> {
+    return this.#contents;
   }
 
   /*
@@ -40,9 +44,8 @@ export default class Dictionary {
   hasString(s: string): boolean {
     if (s == null || s === "") {
       return false;
-    } else {
-      return this.#contents.has(s.toLowerCase());
     }
+    return this.#contents.has(s.toLowerCase());
   }
 
   /*
@@ -53,9 +56,8 @@ export default class Dictionary {
   hasFullWord(s: string): boolean {
     if (s == null || s === "") {
       return false;
-    } else {
-      s = s.toLowerCase();
-      return this.#contents.has(s) && (this.#contents.get(s) as boolean);
     }
+    s = s.toLowerCase();
+    return this.#contents.has(s) && (this.#contents.get(s) as boolean);
   }
 }

@@ -1,3 +1,4 @@
+"use strict";
 var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
@@ -10,19 +11,27 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
 var _Dictionary_instances, _Dictionary_contents, _Dictionary_add;
-export default class Dictionary {
+Object.defineProperty(exports, "__esModule", { value: true });
+/*
+ * Dictionary - represents a collection of English words and word prefixes.
+ * For each full word that is added, all prefixes of that word are also included.
+ * For example, adding the full word "puzzle" also adds the following
+ * prefixes: "p", "pu", "puz", "puzz", and "puzzl".
+ *
+ */
+class Dictionary {
     constructor(fileName) {
         _Dictionary_instances.add(this);
         _Dictionary_contents.set(this, void 0);
         __classPrivateFieldSet(this, _Dictionary_contents, new Map(), "f");
-        const reader = new FileReader();
-        let text = "";
-        reader.addEventListener("load", () => {
-            // this will then display a text file
-            text = reader.result;
-        }, false);
-        const textByLine = text.split("\n");
-        textByLine.forEach((word) => __classPrivateFieldGet(this, _Dictionary_instances, "m", _Dictionary_add).call(this, word));
+        fetch(fileName)
+            .then((res) => res.text())
+            .then((text) => text.split("\n"))
+            .then((arr) => arr.forEach((word) => __classPrivateFieldGet(this, _Dictionary_instances, "m", _Dictionary_add).call(this, word.trim())))
+            .catch((err) => console.log(err));
+    }
+    get contents() {
+        return __classPrivateFieldGet(this, _Dictionary_contents, "f");
     }
     /*
      * hasString - returns true if the specified string s is either a word
@@ -32,9 +41,7 @@ export default class Dictionary {
         if (s == null || s === "") {
             return false;
         }
-        else {
-            return __classPrivateFieldGet(this, _Dictionary_contents, "f").has(s.toLowerCase());
-        }
+        return __classPrivateFieldGet(this, _Dictionary_contents, "f").has(s.toLowerCase());
     }
     /*
      * hasFullWord - returns true if the specified string s is a "full word"
@@ -45,12 +52,11 @@ export default class Dictionary {
         if (s == null || s === "") {
             return false;
         }
-        else {
-            s = s.toLowerCase();
-            return __classPrivateFieldGet(this, _Dictionary_contents, "f").has(s) && __classPrivateFieldGet(this, _Dictionary_contents, "f").get(s);
-        }
+        s = s.toLowerCase();
+        return __classPrivateFieldGet(this, _Dictionary_contents, "f").has(s) && __classPrivateFieldGet(this, _Dictionary_contents, "f").get(s);
     }
 }
+exports.default = Dictionary;
 _Dictionary_contents = new WeakMap(), _Dictionary_instances = new WeakSet(), _Dictionary_add = function _Dictionary_add(word) {
     let prefix = "";
     for (let i = 0; i < word.length; i++) {
