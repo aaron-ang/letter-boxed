@@ -58,7 +58,6 @@ function App() {
         const name = e.target.name;
         setFields(Object.assign(Object.assign({}, fields), { [name]: value.toUpperCase() }));
         const nextInput = inputRefs.current[parseInt(name) + 1];
-        // console.log(nextInput)
         if (nextInput != null && isValid(value) && value !== "") {
             (_a = nextInput.querySelector("input")) === null || _a === void 0 ? void 0 : _a.focus();
         }
@@ -73,6 +72,7 @@ function App() {
     };
     const resetFields = () => {
         setFields(defaultFields);
+        setWords([]);
     };
     const isValid = (c) => {
         return !c || c.toLowerCase() !== c.toUpperCase();
@@ -99,7 +99,7 @@ function App() {
             setSolving(true);
             const input = groupLetters(Object.values(fields));
             game = new LetterSquare_1.default(input);
-            // console.log(LetterSquare.dictionary.contents)
+            console.log(game.words);
             setWords(game.words);
             try {
                 game.solve();
@@ -112,9 +112,11 @@ function App() {
             }
         }
     };
-    const isMaxReached = (words) => {
-        const allFullWords = words.every((word) => LetterSquare_1.default.dictionary.hasFullWord(word));
-        return words.length === LetterSquare_1.default.MOST_WORDS && !allFullWords;
+    const isSuccess = (words) => {
+        // if array is filled, all words must be full
+        const allFullWords = words.every((word) => word !== "" && LetterSquare_1.default.dictionary.hasFullWord(word));
+        const maxNotReached = words.some((word) => word !== "");
+        return maxNotReached || allFullWords;
     };
     return (react_1.default.createElement(react_1.default.Fragment, null,
         react_1.default.createElement(Stack_1.default, { direction: "row", spacing: 2 }, Object.entries(fields).map(([key, value], index) => {
@@ -127,7 +129,7 @@ function App() {
         react_1.default.createElement(LoadingButton_1.default, { loading: solving, variant: "outlined", onClick: handleClick }, "Solve"),
         react_1.default.createElement(Button_1.default, { color: "error", variant: "outlined", onClick: resetFields }, "Reset"),
         words.map((word, index) => (react_1.default.createElement("p", { key: index }, word))),
-        isMaxReached(words) && (react_1.default.createElement("h1", null,
+        !solving && words.length > 0 && !isSuccess(words) && (react_1.default.createElement("h1", null,
             "No solution found using up to ",
             LetterSquare_1.default.MOST_WORDS,
             " words"))));

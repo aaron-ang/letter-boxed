@@ -96,12 +96,7 @@ export default class LetterSquare {
    * one of the words in the solution, and false otherwise.
    */
   #alreadyUsed(word: string): boolean {
-    for (const w in this.#words) {
-      if (w === word) {
-        return true;
-      }
-    }
-    return false;
+    return this.#words.some(w => w === word)
   }
 
   /*
@@ -110,13 +105,7 @@ export default class LetterSquare {
    * and false otherwise
    */
   #onSameSide(letter1: string, letter2: string): boolean {
-    for (const side in this.#sides) {
-      if (side.includes(letter1) && side.includes(letter2)) {
-        return true;
-      }
-    }
-
-    return false;
+    return this.#sides.some(side => side.includes(letter1) && side.includes(letter2))
   }
 
   /*
@@ -125,10 +114,10 @@ export default class LetterSquare {
    * and false otherwise
    */
   #allLettersUsed(): boolean {
-    for (const letter in this.#letters) {
+    for (const letter of this.#letters) {
       let anyWordHasLetter = false;
 
-      for (const w in this.#words) {
+      for (const w of this.#words) {
         if (w.includes(letter)) {
           anyWordHasLetter = true;
           break;
@@ -186,9 +175,9 @@ export default class LetterSquare {
     // First base case: puzzle solved
     if (
       this.#allLettersUsed() &&
-      LetterSquare.dictionary.hasFullWord(this.#words[wordNum])
+      LetterSquare.dictionary.hasFullWord(this.#words[wordNum]) && 
+      this.#words[wordNum].length >= 3
     ) {
-      // TODO: Add code to handle solution found
       return true;
     }
     // Second base case: wordNum is too big, given the value of maxWords
@@ -202,7 +191,7 @@ export default class LetterSquare {
       // Check if valid to add letter
       if (this.#isValid(currLetter, wordNum, charNum)) {
         // Expand current word in solution by adding one letter (delay 300ms)
-        setTimeout(() => this.#addLetter(currLetter, wordNum), 300);
+        this.#addLetter(currLetter, wordNum);
         if (this.#solveRB(wordNum, charNum + 1, maxWords)) {
           return true;
         }

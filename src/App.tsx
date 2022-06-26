@@ -34,7 +34,6 @@ function App() {
     const name = e.target.name;
     setFields({ ...fields, [name]: value.toUpperCase() });
     const nextInput = inputRefs.current[parseInt(name) + 1];
-    // console.log(nextInput)
     if (nextInput != null && isValid(value) && value !== "") {
       nextInput.querySelector("input")?.focus();
     }
@@ -50,6 +49,7 @@ function App() {
 
   const resetFields = () => {
     setFields(defaultFields);
+    setWords([]);
   };
 
   const isValid = (c: string) => {
@@ -82,7 +82,7 @@ function App() {
       setSolving(true);
       const input = groupLetters(Object.values(fields));
       game = new LetterSquare(input);
-      // console.log(LetterSquare.dictionary.contents)
+      console.log(game.words);
       setWords(game.words);
 
       try {
@@ -95,11 +95,13 @@ function App() {
     }
   };
 
-  const isMaxReached = (words: string[]) => {
-    const allFullWords = words.every((word) =>
-      LetterSquare.dictionary.hasFullWord(word)
+  const isSuccess = (words: string[]) => {
+    // if array is filled, all words must be full
+    const allFullWords = words.every(
+      (word) => word !== "" && LetterSquare.dictionary.hasFullWord(word)
     );
-    return words.length === LetterSquare.MOST_WORDS && !allFullWords;
+    const maxNotReached = words.some((word) => word !== "");
+    return maxNotReached || allFullWords;
   };
 
   return (
@@ -136,7 +138,7 @@ function App() {
       {words.map((word, index) => (
         <p key={index}>{word}</p>
       ))}
-      {isMaxReached(words) && (
+      {!solving && words.length > 0 && !isSuccess(words) && (
         <h1>No solution found using up to {LetterSquare.MOST_WORDS} words</h1>
       )}
     </>

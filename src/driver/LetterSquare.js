@@ -99,23 +99,13 @@ _LetterSquare_sides = new WeakMap(), _LetterSquare_letters = new WeakMap(), _Let
 }, _LetterSquare_removeLetter = function _LetterSquare_removeLetter(wordNum) {
     __classPrivateFieldGet(this, _LetterSquare_words, "f")[wordNum] = LetterSquare.removeLast(__classPrivateFieldGet(this, _LetterSquare_words, "f")[wordNum]);
 }, _LetterSquare_alreadyUsed = function _LetterSquare_alreadyUsed(word) {
-    for (const w in __classPrivateFieldGet(this, _LetterSquare_words, "f")) {
-        if (w === word) {
-            return true;
-        }
-    }
-    return false;
+    return __classPrivateFieldGet(this, _LetterSquare_words, "f").some(w => w === word);
 }, _LetterSquare_onSameSide = function _LetterSquare_onSameSide(letter1, letter2) {
-    for (const side in __classPrivateFieldGet(this, _LetterSquare_sides, "f")) {
-        if (side.includes(letter1) && side.includes(letter2)) {
-            return true;
-        }
-    }
-    return false;
+    return __classPrivateFieldGet(this, _LetterSquare_sides, "f").some(side => side.includes(letter1) && side.includes(letter2));
 }, _LetterSquare_allLettersUsed = function _LetterSquare_allLettersUsed() {
-    for (const letter in __classPrivateFieldGet(this, _LetterSquare_letters, "f")) {
+    for (const letter of __classPrivateFieldGet(this, _LetterSquare_letters, "f")) {
         let anyWordHasLetter = false;
-        for (const w in __classPrivateFieldGet(this, _LetterSquare_words, "f")) {
+        for (const w of __classPrivateFieldGet(this, _LetterSquare_words, "f")) {
             if (w.includes(letter)) {
                 anyWordHasLetter = true;
                 break;
@@ -144,8 +134,8 @@ _LetterSquare_sides = new WeakMap(), _LetterSquare_letters = new WeakMap(), _Let
 }, _LetterSquare_solveRB = function _LetterSquare_solveRB(wordNum, charNum, maxWords) {
     // First base case: puzzle solved
     if (__classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_allLettersUsed).call(this) &&
-        LetterSquare.dictionary.hasFullWord(__classPrivateFieldGet(this, _LetterSquare_words, "f")[wordNum])) {
-        // TODO: Add code to handle solution found
+        LetterSquare.dictionary.hasFullWord(__classPrivateFieldGet(this, _LetterSquare_words, "f")[wordNum]) &&
+        __classPrivateFieldGet(this, _LetterSquare_words, "f")[wordNum].length >= 3) {
         return true;
     }
     // Second base case: wordNum is too big, given the value of maxWords
@@ -158,7 +148,7 @@ _LetterSquare_sides = new WeakMap(), _LetterSquare_letters = new WeakMap(), _Let
         // Check if valid to add letter
         if (__classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_isValid).call(this, currLetter, wordNum, charNum)) {
             // Expand current word in solution by adding one letter (delay 300ms)
-            setTimeout(() => __classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_addLetter).call(this, currLetter, wordNum), 300);
+            __classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_addLetter).call(this, currLetter, wordNum);
             if (__classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_solveRB).call(this, wordNum, charNum + 1, maxWords)) {
                 return true;
             }
