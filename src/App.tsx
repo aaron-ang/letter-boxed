@@ -4,6 +4,9 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Button from "@mui/material/Button";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
 
 function App() {
   const defaultFields = {
@@ -20,40 +23,40 @@ function App() {
     10: "",
     11: "",
   };
-  let game: LetterSquare;
 
   const [fields, setFields] = useState<{ [key: number]: string }>(
     defaultFields
   );
   const [solving, setSolving] = useState(false);
   const [words, setWords] = useState<string[]>([]);
+  const [visualize, setVisualize] = useState(false);
+  const [progress, setProgress] = React.useState(0);
   const inputRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const delay = 5;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    const value = e.target.value.replace(/[^a-z]/gi, "");
     const name = e.target.name;
     setFields({ ...fields, [name]: value.toUpperCase() });
     const nextInput = inputRefs.current[parseInt(name) + 1];
-    if (nextInput != null && isValid(value) && value !== "") {
+    if (nextInput != null && value !== "") {
       nextInput.querySelector("input")?.focus();
     }
   };
 
   const handleBackspace = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const name = (e.target as HTMLInputElement).name;
-    if (e.key === "Backspace") {
-      const prevInput = inputRefs.current[parseInt(name) - 1];
+    const target = e.target as HTMLInputElement;
+    if (e.key === "Backspace" && target.value === "") {
+      const prevInput = inputRefs.current[parseInt(target.name) - 1];
       prevInput?.querySelector("input")?.focus();
     }
   };
 
   const resetFields = () => {
     setFields(defaultFields);
+    setSolving(false);
     setWords([]);
-  };
-
-  const isValid = (c: string) => {
-    return !c || c.toLowerCase() !== c.toUpperCase();
+    setProgress(0);
   };
 
   const isFilled = (fields: Record<number, string>) => {
@@ -77,35 +80,52 @@ function App() {
     return res;
   };
 
+  const showProgress = async (progressArr: string[][]) => {
+    setProgress(0);
+
+    if (visualize) {
+      for (const state of progressArr) {
+        setWords(state);
+        setProgress((prevState) => prevState + (1 / progressArr.length) * 100);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    } else {
+      setWords(progressArr.at(-1)!);
+    }
+
+    setProgress(100);
+    setSolving(false);
+  };
+
   const handleClick = () => {
     if (isFilled(fields)) {
       setSolving(true);
       const input = groupLetters(Object.values(fields));
-      game = new LetterSquare(input);
-      console.log(game.words);
-      setWords(game.words);
-
       try {
-        game.solve();
+        const progress = new LetterSquare(input).solve();
+        console.log(progress.at(-1));
+        showProgress(progress);
       } catch (err) {
         console.error(err);
-      } finally {
-        setSolving(false);
       }
     }
   };
 
+  const handleCBChange = () => {
+    setVisualize((prevState) => !prevState);
+  };
+
   const isSuccess = (words: string[]) => {
-    // if array is filled, all words must be full
-    const allFullWords = words.every(
-      (word) => word !== "" && LetterSquare.dictionary.hasFullWord(word)
-    );
-    const maxNotReached = words.some((word) => word !== "");
-    return maxNotReached || allFullWords;
+    // if array is filled, all words must be full words
+    if (words.length >= LetterSquare.MOST_WORDS) {
+      return words.every((word) => LetterSquare.dictionary.hasFullWord(word));
+    }
+    return true;
   };
 
   return (
     <>
+      {/* TODO: Only allow user to type alphabets */}
       <Stack direction="row" spacing={2}>
         {Object.entries(fields).map(([key, value], index) => {
           return (
@@ -123,8 +143,6 @@ function App() {
               onChange={handleChange}
               onKeyDown={handleBackspace}
               disabled={solving}
-              error={!isValid(value)}
-              helperText={!isValid(value) ? "Only alphabets allowed." : ""}
             />
           );
         })}
@@ -135,6 +153,11 @@ function App() {
       <Button color="error" variant="outlined" onClick={resetFields}>
         Reset
       </Button>
+      <FormControlLabel
+        control={<Checkbox checked={visualize} onChange={handleCBChange} />}
+        label="Visualize"
+      />
+      <LinearProgressWithLabel value={progress} />
       {words.map((word, index) => (
         <p key={index}>{word}</p>
       ))}

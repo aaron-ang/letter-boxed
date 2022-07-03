@@ -1,7 +1,7 @@
 /*
  * LetterSquare - represents the state of a letter-square puzzle,
  * and solves it using recursive backtracking.
- * 
+ *
  */
 import Dictionary from "./Dictionary";
 
@@ -19,6 +19,9 @@ export default class LetterSquare {
 
   // The words in the solution.
   #words: string[];
+
+  // Words to build visualizer
+  #solvingProcess: string[][];
 
   /*
    * Constructor for a puzzle with the specified sides, where each
@@ -44,6 +47,7 @@ export default class LetterSquare {
     }
 
     this.#words = [];
+    this.#solvingProcess = [];
     for (let i = 0; i < LetterSquare.MOST_WORDS; i++) {
       this.#words[i] = "";
     }
@@ -96,7 +100,7 @@ export default class LetterSquare {
    * one of the words in the solution, and false otherwise.
    */
   #alreadyUsed(word: string): boolean {
-    return this.#words.some(w => w === word)
+    return this.#words.some((w) => w === word);
   }
 
   /*
@@ -105,7 +109,9 @@ export default class LetterSquare {
    * and false otherwise
    */
   #onSameSide(letter1: string, letter2: string): boolean {
-    return this.#sides.some(side => side.includes(letter1) && side.includes(letter2))
+    return this.#sides.some(
+      (side) => side.includes(letter1) && side.includes(letter2)
+    );
   }
 
   /*
@@ -175,7 +181,7 @@ export default class LetterSquare {
     // First base case: puzzle solved
     if (
       this.#allLettersUsed() &&
-      LetterSquare.dictionary.hasFullWord(this.#words[wordNum]) && 
+      LetterSquare.dictionary.hasFullWord(this.#words[wordNum]) &&
       this.#words[wordNum].length >= 3
     ) {
       return true;
@@ -200,10 +206,13 @@ export default class LetterSquare {
         // Possible solutions exhausted, move to next word
         if (
           currWord.length >= 3 &&
-          LetterSquare.dictionary.hasFullWord(currWord) &&
-          this.#solveRB(wordNum + 1, 0, maxWords)
+          LetterSquare.dictionary.hasFullWord(currWord)
         ) {
-          return true;
+          // Append state to solvingProcess
+          this.#solvingProcess.push(this.#words.filter((word) => word !== ""));
+          if (this.#solveRB(wordNum + 1, 0, maxWords)) {
+            return true;
+          }
         }
 
         // Recursive call returns to current stack frame: Letter is not viable
@@ -225,7 +234,8 @@ export default class LetterSquare {
     while (maxWords <= LetterSquare.MOST_WORDS) {
       console.log("Looking for a solution of length " + maxWords + "...");
       if (this.#solveRB(0, 0, maxWords)) {
-        return;
+        this.#solvingProcess.push(this.#words.filter((word) => word !== ""));
+        return this.#solvingProcess;
       }
       maxWords++;
     }
@@ -233,5 +243,7 @@ export default class LetterSquare {
     console.log(
       "No solution found using up to " + LetterSquare.MOST_WORDS + " words."
     );
+    this.#solvingProcess.push(this.#words.filter((word) => word !== ""));
+    return this.#solvingProcess;
   }
 }

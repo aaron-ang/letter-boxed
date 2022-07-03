@@ -13,7 +13,7 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _LetterSquare_instances, _LetterSquare_sides, _LetterSquare_letters, _LetterSquare_words, _LetterSquare_addLetter, _LetterSquare_removeLetter, _LetterSquare_alreadyUsed, _LetterSquare_onSameSide, _LetterSquare_allLettersUsed, _LetterSquare_isValid, _LetterSquare_solveRB;
+var _LetterSquare_instances, _LetterSquare_sides, _LetterSquare_letters, _LetterSquare_words, _LetterSquare_solvingProcess, _LetterSquare_addLetter, _LetterSquare_removeLetter, _LetterSquare_alreadyUsed, _LetterSquare_onSameSide, _LetterSquare_allLettersUsed, _LetterSquare_isValid, _LetterSquare_solveRB;
 Object.defineProperty(exports, "__esModule", { value: true });
 /*
  * LetterSquare - represents the state of a letter-square puzzle,
@@ -35,6 +35,8 @@ class LetterSquare {
         _LetterSquare_letters.set(this, void 0);
         // The words in the solution.
         _LetterSquare_words.set(this, void 0);
+        // Words to build visualizer
+        _LetterSquare_solvingProcess.set(this, void 0);
         if (sides == null || sides.length !== 4) {
             throw new Error("parameter must be an array of 4 strings");
         }
@@ -51,6 +53,7 @@ class LetterSquare {
             }
         }
         __classPrivateFieldSet(this, _LetterSquare_words, [], "f");
+        __classPrivateFieldSet(this, _LetterSquare_solvingProcess, [], "f");
         for (let i = 0; i < LetterSquare.MOST_WORDS; i++) {
             __classPrivateFieldGet(this, _LetterSquare_words, "f")[i] = "";
         }
@@ -86,22 +89,25 @@ class LetterSquare {
         while (maxWords <= LetterSquare.MOST_WORDS) {
             console.log("Looking for a solution of length " + maxWords + "...");
             if (__classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_solveRB).call(this, 0, 0, maxWords)) {
-                return;
+                __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f").push(__classPrivateFieldGet(this, _LetterSquare_words, "f").filter((word) => word !== ""));
+                return __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f");
             }
             maxWords++;
         }
         console.log("No solution found using up to " + LetterSquare.MOST_WORDS + " words.");
+        __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f").push(__classPrivateFieldGet(this, _LetterSquare_words, "f").filter((word) => word !== ""));
+        return __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f");
     }
 }
 exports.default = LetterSquare;
-_LetterSquare_sides = new WeakMap(), _LetterSquare_letters = new WeakMap(), _LetterSquare_words = new WeakMap(), _LetterSquare_instances = new WeakSet(), _LetterSquare_addLetter = function _LetterSquare_addLetter(letter, wordNum) {
+_LetterSquare_sides = new WeakMap(), _LetterSquare_letters = new WeakMap(), _LetterSquare_words = new WeakMap(), _LetterSquare_solvingProcess = new WeakMap(), _LetterSquare_instances = new WeakSet(), _LetterSquare_addLetter = function _LetterSquare_addLetter(letter, wordNum) {
     __classPrivateFieldGet(this, _LetterSquare_words, "f")[wordNum] += letter;
 }, _LetterSquare_removeLetter = function _LetterSquare_removeLetter(wordNum) {
     __classPrivateFieldGet(this, _LetterSquare_words, "f")[wordNum] = LetterSquare.removeLast(__classPrivateFieldGet(this, _LetterSquare_words, "f")[wordNum]);
 }, _LetterSquare_alreadyUsed = function _LetterSquare_alreadyUsed(word) {
-    return __classPrivateFieldGet(this, _LetterSquare_words, "f").some(w => w === word);
+    return __classPrivateFieldGet(this, _LetterSquare_words, "f").some((w) => w === word);
 }, _LetterSquare_onSameSide = function _LetterSquare_onSameSide(letter1, letter2) {
-    return __classPrivateFieldGet(this, _LetterSquare_sides, "f").some(side => side.includes(letter1) && side.includes(letter2));
+    return __classPrivateFieldGet(this, _LetterSquare_sides, "f").some((side) => side.includes(letter1) && side.includes(letter2));
 }, _LetterSquare_allLettersUsed = function _LetterSquare_allLettersUsed() {
     for (const letter of __classPrivateFieldGet(this, _LetterSquare_letters, "f")) {
         let anyWordHasLetter = false;
@@ -155,9 +161,12 @@ _LetterSquare_sides = new WeakMap(), _LetterSquare_letters = new WeakMap(), _Let
             const currWord = __classPrivateFieldGet(this, _LetterSquare_words, "f")[wordNum];
             // Possible solutions exhausted, move to next word
             if (currWord.length >= 3 &&
-                LetterSquare.dictionary.hasFullWord(currWord) &&
-                __classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_solveRB).call(this, wordNum + 1, 0, maxWords)) {
-                return true;
+                LetterSquare.dictionary.hasFullWord(currWord)) {
+                // Append state to solvingProcess
+                __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f").push(__classPrivateFieldGet(this, _LetterSquare_words, "f").filter((word) => word !== ""));
+                if (__classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_solveRB).call(this, wordNum + 1, 0, maxWords)) {
+                    return true;
+                }
             }
             // Recursive call returns to current stack frame: Letter is not viable
             __classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_removeLetter).call(this, wordNum);
