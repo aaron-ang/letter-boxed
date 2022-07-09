@@ -1,0 +1,10 @@
+{
+  "files": {
+    "main.js": "/letter-square/static/js/main.485056be.js",
+    "index.html": "/letter-square/index.html",
+    "main.485056be.js.map": "/letter-square/static/js/main.485056be.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.485056be.js"
+  ]
+}
