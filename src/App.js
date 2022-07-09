@@ -119,7 +119,8 @@ function App() {
         else {
             setWords(progressArr.at(-1));
         }
-        setProgress(100);
+        if (words.length !== 0)
+            setProgress(100);
         setSolving(false);
     });
     const handleClick = () => {
@@ -159,7 +160,7 @@ function App() {
         react_1.default.createElement(FormControlLabel_1.default, { control: react_1.default.createElement(Checkbox_1.default, { checked: visualize, onChange: handleCBChange }), label: "Visualize" }),
         react_1.default.createElement(LinearProgressWithLabel_1.default, { value: progress }),
         words.map((word, index) => (react_1.default.createElement("p", { key: index }, word))),
-        !solving && words.length > 0 && !isSuccess(words) && (react_1.default.createElement("h1", null,
+        !solving && !isSuccess(words) && (react_1.default.createElement("h1", null,
             "No solution found using up to ",
             LetterSquare_1.default.MOST_WORDS,
             " words"))));

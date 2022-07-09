@@ -93,7 +93,7 @@ function App() {
       setWords(progressArr.at(-1)!);
     }
 
-    setProgress(100);
+    if (words.length !== 0) setProgress(100);
     setSolving(false);
   };
 
@@ -161,7 +161,7 @@ function App() {
       {words.map((word, index) => (
         <p key={index}>{word}</p>
       ))}
-      {!solving && words.length > 0 && !isSuccess(words) && (
+      {!solving && !isSuccess(words) && (
         <h1>No solution found using up to {LetterSquare.MOST_WORDS} words</h1>
       )}
     </>

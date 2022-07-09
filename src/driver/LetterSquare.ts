@@ -6,7 +6,7 @@
 import Dictionary from "./Dictionary";
 
 export default class LetterSquare {
-  static MOST_WORDS = 10;
+  static MOST_WORDS = 5;
   static WORDS_FILE = "word_list.txt";
   static dictionary: Dictionary = new Dictionary(LetterSquare.WORDS_FILE);
 
