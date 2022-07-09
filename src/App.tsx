@@ -31,6 +31,7 @@ function App() {
   const [words, setWords] = useState<string[]>([]);
   const [visualize, setVisualize] = useState(false);
   const [progress, setProgress] = React.useState(0);
+  const [isSuccess, setIsSuccess] = React.useState(true);
   const inputRefs = useRef<Array<HTMLDivElement | null>>([]);
   const delay = 5;
 
@@ -57,6 +58,7 @@ function App() {
     setSolving(false);
     setWords([]);
     setProgress(0);
+    setIsSuccess(true);
   };
 
   const isFilled = (fields: Record<number, string>) => {
@@ -83,17 +85,22 @@ function App() {
   const showProgress = async (progressArr: string[][]) => {
     setProgress(0);
 
+    if (progressArr.at(-1)![0] === "fail") {
+      setIsSuccess(false);
+    } else {
+      setIsSuccess(true);
+    }
+
     if (visualize) {
-      for (const state of progressArr) {
+      for (const state of progressArr.slice(0, -1)) {
         setWords(state);
         setProgress((prevState) => prevState + (1 / progressArr.length) * 100);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     } else {
-      setWords(progressArr.at(-1)!);
+      setWords(progressArr.at(-2)!);
     }
 
-    if (words.length !== 0) setProgress(100);
     setSolving(false);
   };
 
@@ -101,7 +108,7 @@ function App() {
     if (isFilled(fields)) {
       setSolving(true);
       const input = groupLetters(Object.values(fields));
-      console.log(`input: ${input}`)
+      console.log(`input: ${input}`);
       try {
         const progress = new LetterSquare(input).solve();
         console.log(progress.at(-1));
@@ -114,14 +121,6 @@ function App() {
 
   const handleCBChange = () => {
     setVisualize((prevState) => !prevState);
-  };
-
-  const isSuccess = (words: string[]) => {
-    // if array is filled, all words must be full words
-    if (words.length >= LetterSquare.MOST_WORDS) {
-      return words.every((word) => LetterSquare.dictionary.hasFullWord(word));
-    }
-    return true;
   };
 
   return (
@@ -159,10 +158,10 @@ function App() {
         label="Visualize"
       />
       <LinearProgressWithLabel value={progress} />
-      {words.map((word, index) => (
+      {words?.map((word, index) => (
         <p key={index}>{word}</p>
       ))}
-      {!solving && !isSuccess(words) && (
+      {!solving && !isSuccess && (
         <h1>No solution found using up to {LetterSquare.MOST_WORDS} words</h1>
       )}
     </>

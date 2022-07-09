@@ -235,6 +235,7 @@ export default class LetterSquare {
       console.log("Looking for a solution of length " + maxWords + "...");
       if (this.#solveRB(0, 0, maxWords)) {
         this.#solvingProcess.push(this.#words.filter((word) => word !== ""));
+        this.#solvingProcess.push(["success"]);
         return this.#solvingProcess;
       }
       maxWords++;
@@ -243,7 +244,7 @@ export default class LetterSquare {
     console.log(
       "No solution found using up to " + LetterSquare.MOST_WORDS + " words."
     );
-    this.#solvingProcess.push(this.#words.filter((word) => word !== ""));
+    this.#solvingProcess.push(["fail"]);
     return this.#solvingProcess;
   }
 }
