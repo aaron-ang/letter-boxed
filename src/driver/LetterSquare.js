@@ -176,5 +176,5 @@ _LetterSquare_sides = new WeakMap(), _LetterSquare_letters = new WeakMap(), _Let
     return false;
 };
 LetterSquare.MOST_WORDS = 5;
-LetterSquare.WORDS_FILE = "word_list.txt";
+LetterSquare.WORDS_FILE = `${process.env.PUBLIC_URL}/word_list.txt`;
 LetterSquare.dictionary = new Dictionary_1.default(LetterSquare.WORDS_FILE);

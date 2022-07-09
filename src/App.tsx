@@ -101,6 +101,7 @@ function App() {
     if (isFilled(fields)) {
       setSolving(true);
       const input = groupLetters(Object.values(fields));
+      console.log(`input: ${input}`)
       try {
         const progress = new LetterSquare(input).solve();
         console.log(progress.at(-1));

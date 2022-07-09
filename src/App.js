@@ -34,6 +34,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+Object.defineProperty(exports, "__esModule", { value: true });
 const react_1 = __importStar(require("react"));
 const LetterSquare_1 = __importDefault(require("./driver/LetterSquare"));
 const Stack_1 = __importDefault(require("@mui/material/Stack"));
@@ -126,6 +127,7 @@ function App() {
         if (isFilled(fields)) {
             setSolving(true);
             const input = groupLetters(Object.values(fields));
+            console.log(`input: ${input}`);
             try {
                 const progress = new LetterSquare_1.default(input).solve();
                 console.log(progress.at(-1));
