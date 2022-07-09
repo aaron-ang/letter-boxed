@@ -90,12 +90,13 @@ class LetterSquare {
             console.log("Looking for a solution of length " + maxWords + "...");
             if (__classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_solveRB).call(this, 0, 0, maxWords)) {
                 __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f").push(__classPrivateFieldGet(this, _LetterSquare_words, "f").filter((word) => word !== ""));
+                __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f").push(["success"]);
                 return __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f");
             }
             maxWords++;
         }
         console.log("No solution found using up to " + LetterSquare.MOST_WORDS + " words.");
-        __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f").push(__classPrivateFieldGet(this, _LetterSquare_words, "f").filter((word) => word !== ""));
+        __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f").push(["fail"]);
         return __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f");
     }
 }

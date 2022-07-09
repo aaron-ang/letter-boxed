@@ -64,6 +64,7 @@ function App() {
     const [words, setWords] = (0, react_1.useState)([]);
     const [visualize, setVisualize] = (0, react_1.useState)(false);
     const [progress, setProgress] = react_1.default.useState(0);
+    const [isSuccess, setIsSuccess] = react_1.default.useState(true);
     const inputRefs = (0, react_1.useRef)([]);
     const delay = 5;
     const handleChange = (e) => {
@@ -89,6 +90,7 @@ function App() {
         setSolving(false);
         setWords([]);
         setProgress(0);
+        setIsSuccess(true);
     };
     const isFilled = (fields) => {
         return !Object.values(fields).includes("");
@@ -109,18 +111,22 @@ function App() {
     };
     const showProgress = (progressArr) => __awaiter(this, void 0, void 0, function* () {
         setProgress(0);
+        if (progressArr.at(-1)[0] === "fail") {
+            setIsSuccess(false);
+        }
+        else {
+            setIsSuccess(true);
+        }
         if (visualize) {
-            for (const state of progressArr) {
+            for (const state of progressArr.slice(0, -1)) {
                 setWords(state);
                 setProgress((prevState) => prevState + (1 / progressArr.length) * 100);
                 yield new Promise((resolve) => setTimeout(resolve, delay));
             }
         }
         else {
-            setWords(progressArr.at(-1));
+            setWords(progressArr.at(-2));
         }
-        if (words.length !== 0)
-            setProgress(100);
         setSolving(false);
     });
     const handleClick = () => {
@@ -141,13 +147,6 @@ function App() {
     const handleCBChange = () => {
         setVisualize((prevState) => !prevState);
     };
-    const isSuccess = (words) => {
-        // if array is filled, all words must be full words
-        if (words.length >= LetterSquare_1.default.MOST_WORDS) {
-            return words.every((word) => LetterSquare_1.default.dictionary.hasFullWord(word));
-        }
-        return true;
-    };
     return (react_1.default.createElement(react_1.default.Fragment, null,
         react_1.default.createElement(Stack_1.default, { direction: "row", spacing: 2 }, Object.entries(fields).map(([key, value], index) => {
             return (react_1.default.createElement(TextField_1.default, { sx: { width: "5em" }, key: key, inputProps: {
@@ -159,9 +158,9 @@ function App() {
         react_1.default.createElement(LoadingButton_1.default, { loading: solving, variant: "outlined", onClick: handleClick }, "Solve"),
         react_1.default.createElement(Button_1.default, { color: "error", variant: "outlined", onClick: resetFields }, "Reset"),
         react_1.default.createElement(FormControlLabel_1.default, { control: react_1.default.createElement(Checkbox_1.default, { checked: visualize, onChange: handleCBChange }), label: "Visualize" }),
-        react_1.default.createElement(LinearProgressWithLabel_1.default, { value: progress }),
+        react_1.default.createElement(LinearProgressWithLabel_1.default, { value: progress }), words === null || words === void 0 ? void 0 :
         words.map((word, index) => (react_1.default.createElement("p", { key: index }, word))),
-        !solving && !isSuccess(words) && (react_1.default.createElement("h1", null,
+        !solving && !isSuccess && (react_1.default.createElement("h1", null,
             "No solution found using up to ",
             LetterSquare_1.default.MOST_WORDS,
             " words"))));
