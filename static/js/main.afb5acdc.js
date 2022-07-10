@@ -1,2 +1,0 @@
-!function(){"use strict";var e=function(e){return e&&e.__esModule?e:{default:e}};Object.defineProperty(exports,"__esModule",{value:!0});var t=e(require("react")),r=e(require("react-dom/client")),u=e(require("./App"));r.default.createRoot(document.getElementById("root")).render(t.default.createElement(t.default.StrictMode,null,t.default.createElement(u.default,null)))}();
-//# sourceMappingURL=main.afb5acdc.js.map

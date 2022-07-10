@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/letter-square/static/js/main.afb5acdc.js",
+    "main.js": "/letter-square/static/js/main.e4af616d.js",
     "index.html": "/letter-square/index.html",
-    "main.afb5acdc.js.map": "/letter-square/static/js/main.afb5acdc.js.map"
+    "main.e4af616d.js.map": "/letter-square/static/js/main.e4af616d.js.map"
   },
   "entrypoints": [
-    "static/js/main.afb5acdc.js"
+    "static/js/main.e4af616d.js"
   ]
 }
