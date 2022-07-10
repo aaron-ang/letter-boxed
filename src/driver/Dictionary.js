@@ -1,4 +1,3 @@
-"use strict";
 var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
@@ -11,7 +10,6 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
 var _Dictionary_instances, _Dictionary_contents, _Dictionary_add;
-Object.defineProperty(exports, "__esModule", { value: true });
 /*
  * Dictionary - represents a collection of English words and word prefixes.
  * For each full word that is added, all prefixes of that word are also included.
@@ -19,7 +17,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * prefixes: "p", "pu", "puz", "puzz", and "puzzl".
  *
  */
-class Dictionary {
+export default class Dictionary {
     constructor(fileName) {
         _Dictionary_instances.add(this);
         _Dictionary_contents.set(this, void 0);
@@ -56,7 +54,6 @@ class Dictionary {
         return __classPrivateFieldGet(this, _Dictionary_contents, "f").has(s) && __classPrivateFieldGet(this, _Dictionary_contents, "f").get(s);
     }
 }
-exports.default = Dictionary;
 _Dictionary_contents = new WeakMap(), _Dictionary_instances = new WeakSet(), _Dictionary_add = function _Dictionary_add(word) {
     let prefix = "";
     for (let i = 0; i < word.length; i++) {
