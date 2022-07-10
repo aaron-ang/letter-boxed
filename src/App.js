@@ -1,27 +1,3 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -31,19 +7,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const react_1 = __importStar(require("react"));
-const LetterSquare_1 = __importDefault(require("./driver/LetterSquare"));
-const Stack_1 = __importDefault(require("@mui/material/Stack"));
-const TextField_1 = __importDefault(require("@mui/material/TextField"));
-const LoadingButton_1 = __importDefault(require("@mui/lab/LoadingButton"));
-const Button_1 = __importDefault(require("@mui/material/Button"));
-const FormControlLabel_1 = __importDefault(require("@mui/material/FormControlLabel"));
-const Checkbox_1 = __importDefault(require("@mui/material/Checkbox"));
-const LinearProgressWithLabel_1 = __importDefault(require("./components/LinearProgressWithLabel"));
+import React from "react";
+import { useRef, useState } from "react";
+import LetterSquare from "./driver/LetterSquare";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import LoadingButton from "@mui/lab/LoadingButton";
+import Button from "@mui/material/Button";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Checkbox from "@mui/material/Checkbox";
+import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
 function App() {
     const defaultFields = {
         0: "",
@@ -59,13 +32,13 @@ function App() {
         10: "",
         11: "",
     };
-    const [fields, setFields] = (0, react_1.useState)(defaultFields);
-    const [solving, setSolving] = (0, react_1.useState)(false);
-    const [words, setWords] = (0, react_1.useState)([]);
-    const [visualize, setVisualize] = (0, react_1.useState)(false);
-    const [progress, setProgress] = react_1.default.useState(0);
-    const [isSuccess, setIsSuccess] = react_1.default.useState(true);
-    const inputRefs = (0, react_1.useRef)([]);
+    const [fields, setFields] = useState(defaultFields);
+    const [solving, setSolving] = useState(false);
+    const [words, setWords] = useState([]);
+    const [visualize, setVisualize] = useState(false);
+    const [progress, setProgress] = React.useState(0);
+    const [isSuccess, setIsSuccess] = React.useState(true);
+    const inputRefs = useRef([]);
     const delay = 5;
     const handleChange = (e) => {
         var _a;
@@ -135,7 +108,7 @@ function App() {
             const input = groupLetters(Object.values(fields));
             console.log(`input: ${input}`);
             try {
-                const progress = new LetterSquare_1.default(input).solve();
+                const progress = new LetterSquare(input).solve();
                 console.log(progress.at(-1));
                 showProgress(progress);
             }
@@ -147,22 +120,22 @@ function App() {
     const handleCBChange = () => {
         setVisualize((prevState) => !prevState);
     };
-    return (react_1.default.createElement(react_1.default.Fragment, null,
-        react_1.default.createElement(Stack_1.default, { direction: "row", spacing: 2 }, Object.entries(fields).map(([key, value], index) => {
-            return (react_1.default.createElement(TextField_1.default, { sx: { width: "5em" }, key: key, inputProps: {
+    return (React.createElement(React.Fragment, null,
+        React.createElement(Stack, { direction: "row", spacing: 2 }, Object.entries(fields).map(([key, value], index) => {
+            return (React.createElement(TextField, { sx: { width: "5em" }, key: key, inputProps: {
                     inputMode: "text",
                     pattern: "[a-zA-Z]+",
                     maxLength: 1,
                 }, name: key, ref: (el) => (inputRefs.current[index] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, disabled: solving }));
         })),
-        react_1.default.createElement(LoadingButton_1.default, { loading: solving, variant: "outlined", onClick: handleClick }, "Solve"),
-        react_1.default.createElement(Button_1.default, { color: "error", variant: "outlined", onClick: resetFields }, "Reset"),
-        react_1.default.createElement(FormControlLabel_1.default, { control: react_1.default.createElement(Checkbox_1.default, { checked: visualize, onChange: handleCBChange }), label: "Visualize" }),
-        react_1.default.createElement(LinearProgressWithLabel_1.default, { value: progress }), words === null || words === void 0 ? void 0 :
-        words.map((word, index) => (react_1.default.createElement("p", { key: index }, word))),
-        !solving && !isSuccess && (react_1.default.createElement("h1", null,
+        React.createElement(LoadingButton, { loading: solving, variant: "outlined", onClick: handleClick }, "Solve"),
+        React.createElement(Button, { color: "error", variant: "outlined", onClick: resetFields }, "Reset"),
+        React.createElement(FormControlLabel, { control: React.createElement(Checkbox, { checked: visualize, onChange: handleCBChange }), label: "Visualize" }),
+        React.createElement(LinearProgressWithLabel, { value: progress }), words === null || words === void 0 ? void 0 :
+        words.map((word, index) => (React.createElement("p", { key: index }, word))),
+        !solving && !isSuccess && (React.createElement("h1", null,
             "No solution found using up to ",
-            LetterSquare_1.default.MOST_WORDS,
+            LetterSquare.MOST_WORDS,
             " words"))));
 }
-exports.default = App;
+export default App;

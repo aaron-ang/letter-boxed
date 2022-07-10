@@ -1,4 +1,3 @@
-"use strict";
 var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
@@ -10,18 +9,14 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 var _LetterSquare_instances, _LetterSquare_sides, _LetterSquare_letters, _LetterSquare_words, _LetterSquare_solvingProcess, _LetterSquare_addLetter, _LetterSquare_removeLetter, _LetterSquare_alreadyUsed, _LetterSquare_onSameSide, _LetterSquare_allLettersUsed, _LetterSquare_isValid, _LetterSquare_solveRB;
-Object.defineProperty(exports, "__esModule", { value: true });
 /*
  * LetterSquare - represents the state of a letter-square puzzle,
  * and solves it using recursive backtracking.
  *
  */
-const Dictionary_1 = __importDefault(require("./Dictionary"));
-class LetterSquare {
+import Dictionary from "./Dictionary";
+export default class LetterSquare {
     /*
      * Constructor for a puzzle with the specified sides, where each
      * side is a string containing the 3 letters from one side of the square.
@@ -100,7 +95,6 @@ class LetterSquare {
         return __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f");
     }
 }
-exports.default = LetterSquare;
 _LetterSquare_sides = new WeakMap(), _LetterSquare_letters = new WeakMap(), _LetterSquare_words = new WeakMap(), _LetterSquare_solvingProcess = new WeakMap(), _LetterSquare_instances = new WeakSet(), _LetterSquare_addLetter = function _LetterSquare_addLetter(letter, wordNum) {
     __classPrivateFieldGet(this, _LetterSquare_words, "f")[wordNum] += letter;
 }, _LetterSquare_removeLetter = function _LetterSquare_removeLetter(wordNum) {
@@ -178,4 +172,4 @@ _LetterSquare_sides = new WeakMap(), _LetterSquare_letters = new WeakMap(), _Let
 };
 LetterSquare.MOST_WORDS = 5;
 LetterSquare.WORDS_FILE = `${process.env.PUBLIC_URL}/word_list.txt`;
-LetterSquare.dictionary = new Dictionary_1.default(LetterSquare.WORDS_FILE);
+LetterSquare.dictionary = new Dictionary(LetterSquare.WORDS_FILE);
