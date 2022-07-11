@@ -35,6 +35,8 @@ function App() {
         11: "",
     };
     const [fields, setFields] = useState(defaultFields);
+    const [disabled, setDisabled] = useState([]); // To allow changing of TextField state while visualizing
+    const [focus, setFocus] = useState([]); // To allow changing of TextField state while visualizing
     const [solving, setSolving] = useState(false);
     const [words, setWords] = useState([]);
     const [visualize, setVisualize] = useState(false);
@@ -75,6 +77,7 @@ function App() {
         setWords([]);
         setProgress(0);
         setIsSuccess(true);
+        setFocus([]);
     };
     const isFilled = (fields) => {
         return !Object.values(fields).includes("");
@@ -95,22 +98,48 @@ function App() {
     };
     const showProgress = (progressArr) => __awaiter(this, void 0, void 0, function* () {
         setProgress(0);
-        if (progressArr.at(-1)[0] === "fail") {
-            setIsSuccess(false);
-        }
-        else {
-            setIsSuccess(true);
-        }
+        progressArr.at(-1)[0] === "fail"
+            ? setIsSuccess(false)
+            : setIsSuccess(true);
+        const updateFocus = (stateArr, focusArr) => {
+            stateArr.forEach((word) => {
+                const charArray = [...word];
+                charArray.forEach((c) => {
+                    const index = fieldsArr.indexOf(c);
+                    if (index !== -1) {
+                        focusArr[index] = true;
+                    }
+                });
+            });
+        };
+        const fieldsArr = Object.values(fields);
         if (visualize) {
             for (const state of progressArr.slice(0, -1)) {
                 setWords(state);
                 setProgress((prevState) => prevState + (1 / progressArr.length) * 100);
+                // If char in textfield is used, make it focused
+                const focusArr = Array(12).fill(false);
+                updateFocus(state, focusArr);
+                // If textfield is not focused, make it disabled
+                const disabledArr = [];
+                focusArr.forEach((val, i) => {
+                    if (!val) {
+                        disabledArr[i] = true;
+                    }
+                });
+                setFocus(focusArr);
+                setDisabled(disabledArr);
                 yield new Promise((resolve) => setTimeout(resolve, delay));
             }
         }
         else {
-            setWords(progressArr.at(-2));
+            const lastSolution = progressArr.at(-2);
+            const focusArr = [];
+            updateFocus(lastSolution, focusArr);
+            setFocus(focusArr);
+            setWords(lastSolution);
         }
+        setDisabled([]);
         setSolving(false);
     });
     const handleClick = () => {
@@ -128,42 +157,34 @@ function App() {
             }
         }
     };
-    const handleCBChange = () => {
+    const handleVizChange = () => {
         setVisualize((prevState) => !prevState);
     };
     return (React.createElement(Box, { sx: {
-            paddingTop: "10em",
+            paddingTop: "5em",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
         } },
         React.createElement(Stack, { direction: "row", spacing: 2 }, Object.entries(fields)
             .slice(0, 3)
-            .map(([key, value], index) => {
-            return (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[index] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, disabled: solving }));
-        })),
+            .map(([key, value]) => (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[parseInt(key)] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, focused: focus[parseInt(key)], disabled: disabled[parseInt(key)] })))),
         React.createElement(Grid, { container: true, justifyContent: "center", spacing: 30 },
             React.createElement(Grid, { item: true },
                 React.createElement(Stack, { direction: "column", spacing: 2 }, Object.entries(fields)
                     .slice(3, 6)
-                    .map(([key, value], index) => {
-                    return (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[index + 3] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, disabled: solving }));
-                }))),
+                    .map(([key, value]) => (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[parseInt(key)] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, focused: focus[parseInt(key)], disabled: disabled[parseInt(key)] }))))),
             React.createElement(Grid, { item: true },
                 React.createElement(Stack, { direction: "column", spacing: 2 }, Object.entries(fields)
                     .slice(6, 9)
-                    .map(([key, value], index) => {
-                    return (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[index + 6] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, disabled: solving }));
-                })))),
+                    .map(([key, value]) => (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[parseInt(key)] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, focused: focus[parseInt(key)], disabled: disabled[parseInt(key)] })))))),
         React.createElement(Stack, { direction: "row", spacing: 2 }, Object.entries(fields)
             .slice(9)
-            .map(([key, value], index) => {
-            return (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[index + 9] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, disabled: solving }));
-        })),
+            .map(([key, value]) => (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[parseInt(key)] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, focused: focus[parseInt(key)], disabled: disabled[parseInt(key)] })))),
         React.createElement(Stack, { direction: "row", spacing: 2, margin: 2 },
             React.createElement(Button, { color: "error", variant: "contained", onClick: resetFields }, "Reset"),
             React.createElement(LoadingButton, { loading: solving, variant: "contained", onClick: handleClick }, "Solve"),
-            React.createElement(FormControlLabel, { control: React.createElement(Checkbox, { checked: visualize, onChange: handleCBChange }), label: "Visualize" })),
+            React.createElement(FormControlLabel, { disabled: solving, control: React.createElement(Checkbox, { checked: visualize, onChange: handleVizChange }), label: "Visualize" })),
         React.createElement(LinearProgressWithLabel, { value: progress }),
         React.createElement(React.Fragment, null, words === null || words === void 0 ? void 0 :
             words.map((word, index) => (React.createElement("p", { key: index }, word))),
