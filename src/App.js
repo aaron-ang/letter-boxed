@@ -132,12 +132,12 @@ function App() {
         setVisualize((prevState) => !prevState);
     };
     return (React.createElement(Box, { sx: {
-            height: "100vh",
             backgroundColor: "#fdbcb4",
+            height: "100vh",
+            paddingTop: "10em",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
         } },
         React.createElement(Stack, { direction: "row", spacing: 2 }, Object.entries(fields)
             .slice(0, 3)
