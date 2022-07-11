@@ -1,7 +1,9 @@
 import React from "react";
-import { useRef, useState} from "react";
+import { useRef, useState } from "react";
 import LetterSquare from "./driver/LetterSquare";
+import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
+import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Button from "@mui/material/Button";
@@ -34,6 +36,15 @@ function App() {
   const [progress, setProgress] = React.useState(0);
   const [isSuccess, setIsSuccess] = React.useState(true);
   const inputRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const inputProps = {
+    inputMode: "text" as "text",
+    pattern: "[a-zA-Z]+",
+    maxLength: 1,
+    style: {
+      textAlign: "center" as "center",
+    },
+  };
+  const sx = { width: "4em" };
   const delay = 5;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,47 +136,125 @@ function App() {
   };
 
   return (
-    <>
-      {/* TODO: Only allow user to type alphabets */}
+    <Box
+      sx={{
+        height: "100vh",
+        backgroundColor: "#fdbcb4",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <Stack direction="row" spacing={2}>
-        {Object.entries(fields).map(([key, value], index) => {
-          return (
-            <TextField
-              sx={{ width: "5em" }}
-              key={key}
-              inputProps={{
-                inputMode: "text",
-                pattern: "[a-zA-Z]+",
-                maxLength: 1,
-              }}
-              name={key}
-              ref={(el) => (inputRefs.current[index] = el)}
-              value={value}
-              onChange={handleChange}
-              onKeyDown={handleBackspace}
-              disabled={solving}
-            />
-          );
-        })}
+        {Object.entries(fields)
+          .slice(0, 3)
+          .map(([key, value], index) => {
+            return (
+              <TextField
+                sx={sx}
+                key={key}
+                inputProps={inputProps}
+                name={key}
+                ref={(el) => (inputRefs.current[index] = el)}
+                value={value}
+                onChange={handleChange}
+                onKeyDown={handleBackspace}
+                disabled={solving}
+              />
+            );
+          })}
       </Stack>
-      <LoadingButton loading={solving} variant="outlined" onClick={handleClick}>
-        Solve
-      </LoadingButton>
-      <Button color="error" variant="outlined" onClick={resetFields}>
-        Reset
-      </Button>
-      <FormControlLabel
-        control={<Checkbox checked={visualize} onChange={handleCBChange} />}
-        label="Visualize"
-      />
+      <Grid container justifyContent="center" spacing={30}>
+        <Grid item>
+          <Stack direction="column" spacing={2}>
+            {Object.entries(fields)
+              .slice(3, 6)
+              .map(([key, value], index) => {
+                return (
+                  <TextField
+                    sx={sx}
+                    key={key}
+                    inputProps={inputProps}
+                    name={key}
+                    ref={(el) => (inputRefs.current[index + 3] = el)}
+                    value={value}
+                    onChange={handleChange}
+                    onKeyDown={handleBackspace}
+                    disabled={solving}
+                  />
+                );
+              })}
+          </Stack>
+        </Grid>
+        <Grid item>
+          <Stack direction="column" spacing={2}>
+            {Object.entries(fields)
+              .slice(6, 9)
+              .map(([key, value], index) => {
+                return (
+                  <TextField
+                    sx={sx}
+                    key={key}
+                    inputProps={inputProps}
+                    name={key}
+                    ref={(el) => (inputRefs.current[index + 6] = el)}
+                    value={value}
+                    onChange={handleChange}
+                    onKeyDown={handleBackspace}
+                    disabled={solving}
+                  />
+                );
+              })}
+          </Stack>
+        </Grid>
+      </Grid>
+      <Stack direction="row" spacing={2}>
+        {Object.entries(fields)
+          .slice(9)
+          .map(([key, value], index) => {
+            return (
+              <TextField
+                sx={sx}
+                key={key}
+                inputProps={inputProps}
+                name={key}
+                ref={(el) => (inputRefs.current[index + 9] = el)}
+                value={value}
+                onChange={handleChange}
+                onKeyDown={handleBackspace}
+                disabled={solving}
+              />
+            );
+          })}
+      </Stack>
+
+      <Stack direction="row" spacing={2} margin={2}>
+        <Button color="error" variant="contained" onClick={resetFields}>
+          Reset
+        </Button>
+        <LoadingButton
+          loading={solving}
+          variant="contained"
+          onClick={handleClick}
+        >
+          Solve
+        </LoadingButton>
+        <FormControlLabel
+          control={<Checkbox checked={visualize} onChange={handleCBChange} />}
+          label="Visualize"
+        />
+      </Stack>
       <LinearProgressWithLabel value={progress} />
-      {words?.map((word, index) => (
-        <p key={index}>{word}</p>
-      ))}
-      {!solving && !isSuccess && (
-        <h1>No solution found using up to {LetterSquare.MOST_WORDS} words</h1>
-      )}
-    </>
+      <>
+        {words?.map((word, index) => (
+          <p key={index}>{word}</p>
+        ))}
+        {!solving && !isSuccess && (
+          <h1>No solution found using up to {LetterSquare.MOST_WORDS} words</h1>
+        )}
+      </>
+    </Box>
   );
 }
 
