@@ -132,8 +132,6 @@ function App() {
         setVisualize((prevState) => !prevState);
     };
     return (React.createElement(Box, { sx: {
-            backgroundColor: "#fdbcb4",
-            height: "100vh",
             paddingTop: "10em",
             display: "flex",
             flexDirection: "column",
