@@ -30,6 +30,8 @@ function App() {
   const [fields, setFields] = useState<{ [key: number]: string }>(
     defaultFields
   );
+  const [disabled, setDisabled] = useState<boolean[]>([]); // To allow changing of TextField state while visualizing
+  const [focus, setFocus] = useState<boolean[]>([]); // To allow changing of TextField state while visualizing
   const [solving, setSolving] = useState(false);
   const [words, setWords] = useState<string[]>([]);
   const [visualize, setVisualize] = useState(false);
@@ -71,6 +73,7 @@ function App() {
     setWords([]);
     setProgress(0);
     setIsSuccess(true);
+    setFocus([]);
   };
 
   const isFilled = (fields: Record<number, string>) => {
@@ -97,22 +100,50 @@ function App() {
   const showProgress = async (progressArr: string[][]) => {
     setProgress(0);
 
-    if (progressArr.at(-1)![0] === "fail") {
-      setIsSuccess(false);
-    } else {
-      setIsSuccess(true);
-    }
+    progressArr.at(-1)![0] === "fail"
+      ? setIsSuccess(false)
+      : setIsSuccess(true);
 
+    const updateFocus = (stateArr: string[], focusArr: boolean[]) => {
+      stateArr.forEach((word) => {
+        const charArray = [...word];
+        charArray.forEach((c) => {
+          const index = fieldsArr.indexOf(c);
+          if (index !== -1) {
+            focusArr[index] = true;
+          }
+        });
+      });
+    };
+
+    const fieldsArr = Object.values(fields);
     if (visualize) {
       for (const state of progressArr.slice(0, -1)) {
         setWords(state);
         setProgress((prevState) => prevState + (1 / progressArr.length) * 100);
+        // If char in textfield is used, make it focused
+        const focusArr: boolean[] = Array(12).fill(false);
+        updateFocus(state, focusArr);
+        // If textfield is not focused, make it disabled
+        const disabledArr: boolean[] = [];
+        focusArr.forEach((val, i) => {
+          if (!val) {
+            disabledArr[i] = true;
+          }
+        });
+        setFocus(focusArr);
+        setDisabled(disabledArr);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     } else {
-      setWords(progressArr.at(-2)!);
+      const lastSolution = progressArr.at(-2)!;
+      const focusArr: boolean[] = [];
+      updateFocus(lastSolution, focusArr);
+      setFocus(focusArr);
+      setWords(lastSolution);
     }
 
+    setDisabled([])
     setSolving(false);
   };
 
@@ -131,14 +162,14 @@ function App() {
     }
   };
 
-  const handleCBChange = () => {
+  const handleVizChange = () => {
     setVisualize((prevState) => !prevState);
   };
 
   return (
     <Box
       sx={{
-        paddingTop: "10em",
+        paddingTop: "5em",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -147,84 +178,80 @@ function App() {
       <Stack direction="row" spacing={2}>
         {Object.entries(fields)
           .slice(0, 3)
-          .map(([key, value], index) => {
-            return (
-              <TextField
-                sx={sx}
-                key={key}
-                inputProps={inputProps}
-                name={key}
-                ref={(el) => (inputRefs.current[index] = el)}
-                value={value}
-                onChange={handleChange}
-                onKeyDown={handleBackspace}
-                disabled={solving}
-              />
-            );
-          })}
+          .map(([key, value]) => (
+            <TextField
+              sx={sx}
+              key={key}
+              inputProps={inputProps}
+              name={key}
+              ref={(el) => (inputRefs.current[parseInt(key)] = el)}
+              value={value}
+              onChange={handleChange}
+              onKeyDown={handleBackspace}
+              focused={focus[parseInt(key)]}
+              disabled={disabled[parseInt(key)]}
+            />
+          ))}
       </Stack>
       <Grid container justifyContent="center" spacing={30}>
         <Grid item>
           <Stack direction="column" spacing={2}>
             {Object.entries(fields)
               .slice(3, 6)
-              .map(([key, value], index) => {
-                return (
-                  <TextField
-                    sx={sx}
-                    key={key}
-                    inputProps={inputProps}
-                    name={key}
-                    ref={(el) => (inputRefs.current[index + 3] = el)}
-                    value={value}
-                    onChange={handleChange}
-                    onKeyDown={handleBackspace}
-                    disabled={solving}
-                  />
-                );
-              })}
+              .map(([key, value]) => (
+                <TextField
+                  sx={sx}
+                  key={key}
+                  inputProps={inputProps}
+                  name={key}
+                  ref={(el) => (inputRefs.current[parseInt(key)] = el)}
+                  value={value}
+                  onChange={handleChange}
+                  onKeyDown={handleBackspace}
+                  focused={focus[parseInt(key)]}
+                  disabled={disabled[parseInt(key)]}
+                />
+              ))}
           </Stack>
         </Grid>
         <Grid item>
           <Stack direction="column" spacing={2}>
             {Object.entries(fields)
               .slice(6, 9)
-              .map(([key, value], index) => {
-                return (
-                  <TextField
-                    sx={sx}
-                    key={key}
-                    inputProps={inputProps}
-                    name={key}
-                    ref={(el) => (inputRefs.current[index + 6] = el)}
-                    value={value}
-                    onChange={handleChange}
-                    onKeyDown={handleBackspace}
-                    disabled={solving}
-                  />
-                );
-              })}
+              .map(([key, value]) => (
+                <TextField
+                  sx={sx}
+                  key={key}
+                  inputProps={inputProps}
+                  name={key}
+                  ref={(el) => (inputRefs.current[parseInt(key)] = el)}
+                  value={value}
+                  onChange={handleChange}
+                  onKeyDown={handleBackspace}
+                  focused={focus[parseInt(key)]}
+                  disabled={disabled[parseInt(key)]}
+                />
+              ))}
           </Stack>
         </Grid>
       </Grid>
       <Stack direction="row" spacing={2}>
         {Object.entries(fields)
           .slice(9)
-          .map(([key, value], index) => {
-            return (
-              <TextField
-                sx={sx}
-                key={key}
-                inputProps={inputProps}
-                name={key}
-                ref={(el) => (inputRefs.current[index + 9] = el)}
-                value={value}
-                onChange={handleChange}
-                onKeyDown={handleBackspace}
-                disabled={solving}
-              />
-            );
-          })}
+          .map(([key, value]) => (
+            <TextField
+              sx={sx}
+              key={key}
+              inputProps={inputProps}
+              name={key}
+              ref={(el) => (inputRefs.current[parseInt(key)] = el)}
+              value={value}
+              onChange={handleChange}
+              onKeyDown={handleBackspace}
+              focused={focus[parseInt(key)]}
+              disabled={disabled[parseInt(key)]}
+            />
+          ))}
       </Stack>
 
       <Stack direction="row" spacing={2} margin={2}>
@@ -239,7 +266,8 @@ function App() {
           Solve
         </LoadingButton>
         <FormControlLabel
-          control={<Checkbox checked={visualize} onChange={handleCBChange} />}
+          disabled={solving}
+          control={<Checkbox checked={visualize} onChange={handleVizChange} />}
           label="Visualize"
         />
       </Stack>
