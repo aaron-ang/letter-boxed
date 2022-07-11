@@ -138,12 +138,12 @@ function App() {
   return (
     <Box
       sx={{
-        height: "100vh",
         backgroundColor: "#fdbcb4",
+        height: "100vh",
+        paddingTop: "10em",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
       }}
     >
       <Stack direction="row" spacing={2}>
