@@ -10,7 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import React from "react";
 import { useRef, useState } from "react";
 import LetterSquare from "./driver/LetterSquare";
+import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
+import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Button from "@mui/material/Button";
@@ -39,6 +41,15 @@ function App() {
     const [progress, setProgress] = React.useState(0);
     const [isSuccess, setIsSuccess] = React.useState(true);
     const inputRefs = useRef([]);
+    const inputProps = {
+        inputMode: "text",
+        pattern: "[a-zA-Z]+",
+        maxLength: 1,
+        style: {
+            textAlign: "center",
+        },
+    };
+    const sx = { width: "4em" };
     const delay = 5;
     const handleChange = (e) => {
         var _a;
@@ -120,22 +131,47 @@ function App() {
     const handleCBChange = () => {
         setVisualize((prevState) => !prevState);
     };
-    return (React.createElement(React.Fragment, null,
-        React.createElement(Stack, { direction: "row", spacing: 2 }, Object.entries(fields).map(([key, value], index) => {
-            return (React.createElement(TextField, { sx: { width: "5em" }, key: key, inputProps: {
-                    inputMode: "text",
-                    pattern: "[a-zA-Z]+",
-                    maxLength: 1,
-                }, name: key, ref: (el) => (inputRefs.current[index] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, disabled: solving }));
+    return (React.createElement(Box, { sx: {
+            height: "100vh",
+            backgroundColor: "#fdbcb4",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+        } },
+        React.createElement(Stack, { direction: "row", spacing: 2 }, Object.entries(fields)
+            .slice(0, 3)
+            .map(([key, value], index) => {
+            return (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[index] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, disabled: solving }));
         })),
-        React.createElement(LoadingButton, { loading: solving, variant: "outlined", onClick: handleClick }, "Solve"),
-        React.createElement(Button, { color: "error", variant: "outlined", onClick: resetFields }, "Reset"),
-        React.createElement(FormControlLabel, { control: React.createElement(Checkbox, { checked: visualize, onChange: handleCBChange }), label: "Visualize" }),
-        React.createElement(LinearProgressWithLabel, { value: progress }), words === null || words === void 0 ? void 0 :
-        words.map((word, index) => (React.createElement("p", { key: index }, word))),
-        !solving && !isSuccess && (React.createElement("h1", null,
-            "No solution found using up to ",
-            LetterSquare.MOST_WORDS,
-            " words"))));
+        React.createElement(Grid, { container: true, justifyContent: "center", spacing: 30 },
+            React.createElement(Grid, { item: true },
+                React.createElement(Stack, { direction: "column", spacing: 2 }, Object.entries(fields)
+                    .slice(3, 6)
+                    .map(([key, value], index) => {
+                    return (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[index + 3] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, disabled: solving }));
+                }))),
+            React.createElement(Grid, { item: true },
+                React.createElement(Stack, { direction: "column", spacing: 2 }, Object.entries(fields)
+                    .slice(6, 9)
+                    .map(([key, value], index) => {
+                    return (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[index + 6] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, disabled: solving }));
+                })))),
+        React.createElement(Stack, { direction: "row", spacing: 2 }, Object.entries(fields)
+            .slice(9)
+            .map(([key, value], index) => {
+            return (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[index + 9] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, disabled: solving }));
+        })),
+        React.createElement(Stack, { direction: "row", spacing: 2, margin: 2 },
+            React.createElement(Button, { color: "error", variant: "contained", onClick: resetFields }, "Reset"),
+            React.createElement(LoadingButton, { loading: solving, variant: "contained", onClick: handleClick }, "Solve"),
+            React.createElement(FormControlLabel, { control: React.createElement(Checkbox, { checked: visualize, onChange: handleCBChange }), label: "Visualize" })),
+        React.createElement(LinearProgressWithLabel, { value: progress }),
+        React.createElement(React.Fragment, null, words === null || words === void 0 ? void 0 :
+            words.map((word, index) => (React.createElement("p", { key: index }, word))),
+            !solving && !isSuccess && (React.createElement("h1", null,
+                "No solution found using up to ",
+                LetterSquare.MOST_WORDS,
+                " words")))));
 }
 export default App;
