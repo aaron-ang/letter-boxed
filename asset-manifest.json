@@ -1,10 +1,13 @@
 {
   "files": {
-    "main.js": "/letter-square/static/js/main.72e645de.js",
+    "main.css": "/letter-square/static/css/main.57d765e7.css",
+    "main.js": "/letter-square/static/js/main.b5509223.js",
     "index.html": "/letter-square/index.html",
-    "main.72e645de.js.map": "/letter-square/static/js/main.72e645de.js.map"
+    "main.57d765e7.css.map": "/letter-square/static/css/main.57d765e7.css.map",
+    "main.b5509223.js.map": "/letter-square/static/js/main.b5509223.js.map"
   },
   "entrypoints": [
-    "static/js/main.72e645de.js"
+    "static/css/main.57d765e7.css",
+    "static/js/main.b5509223.js"
   ]
 }
