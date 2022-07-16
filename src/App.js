@@ -19,6 +19,7 @@ import Button from "@mui/material/Button";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
+import Slider from "@mui/material/Slider";
 function App() {
     const defaultFields = {
         0: "",
@@ -34,15 +35,6 @@ function App() {
         10: "",
         11: "",
     };
-    const [fields, setFields] = useState(defaultFields);
-    const [disabled, setDisabled] = useState([]); // To allow changing of TextField state while visualizing
-    const [focus, setFocus] = useState([]); // To allow changing of TextField state while visualizing
-    const [solving, setSolving] = useState(false);
-    const [words, setWords] = useState([]);
-    const [visualize, setVisualize] = useState(false);
-    const [progress, setProgress] = React.useState(0);
-    const [isSuccess, setIsSuccess] = React.useState(true);
-    const inputRefs = useRef([]);
     const inputProps = {
         inputMode: "text",
         pattern: "[a-zA-Z]+",
@@ -52,7 +44,22 @@ function App() {
         },
     };
     const sx = { width: "4em" };
-    const delay = 5;
+    const marks = [
+        { value: 1, label: "1" },
+        { value: 5, label: "5" },
+        { value: 10, label: "10" },
+        { value: 25, label: "25" },
+    ];
+    const [fields, setFields] = useState(defaultFields);
+    const [disabled, setDisabled] = useState([]); // To allow changing of TextField state while visualizing
+    const [focus, setFocus] = useState([]); // To allow changing of TextField state while visualizing
+    const [solving, setSolving] = useState(false);
+    const [words, setWords] = useState([]);
+    const [visualize, setVisualize] = useState(false);
+    const [progress, setProgress] = React.useState(0);
+    const [isSuccess, setIsSuccess] = React.useState(true);
+    const [delay, setDelay] = React.useState(5);
+    const inputRefs = useRef([]);
     const handleChange = (e) => {
         var _a;
         const value = e.target.value.replace(/[^a-z]/gi, "");
@@ -72,12 +79,58 @@ function App() {
         }
     };
     const resetFields = () => {
-        setFields(defaultFields);
-        setSolving(false);
+        window.location.reload(); // Only way to cancel promise chain
+    };
+    const handleSliderChange = (event, newValue) => {
+        if (typeof newValue === "number") {
+            setDelay(newValue);
+        }
+    };
+    const handleVizChange = () => {
+        setVisualize((prevState) => !prevState);
+    };
+    const handleClick = () => {
+        if (isFilled(fields)) {
+            const input = groupLetters(Object.values(fields));
+            console.log(`input: ${input}`);
+            try {
+                const progress = new LetterSquare(input).solve();
+                console.log(progress.at(-1));
+                if (progress.at(-1)[0] === "success") {
+                    setIsSuccess(true);
+                    showProgress(progress);
+                }
+                else {
+                    setIsSuccess(false);
+                }
+            }
+            catch (err) {
+                console.error(err);
+            }
+        }
+    };
+    const generateRandom = () => {
         setWords([]);
         setProgress(0);
         setIsSuccess(true);
         setFocus([]);
+        const keys = [...Array(12).keys()];
+        const charSet = new Set();
+        // TODO: Split into common characters and others
+        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        while (charSet.size < keys.length) {
+            charSet.add(characters.charAt(Math.floor(Math.random() * characters.length)));
+        }
+        const charArray = [...charSet];
+        const result = {};
+        keys.forEach((key) => (result[key] = charArray[key]));
+        setFields(result);
+    };
+    const getPuzzle = () => {
+        // setWords([]);
+        // setProgress(0);
+        // setIsSuccess(true);
+        // setFocus([]);
     };
     const isFilled = (fields) => {
         return !Object.values(fields).includes("");
@@ -97,12 +150,12 @@ function App() {
         return res;
     };
     const showProgress = (progressArr) => __awaiter(this, void 0, void 0, function* () {
+        var _a;
         setProgress(0);
-        progressArr.at(-1)[0] === "fail"
-            ? setIsSuccess(false)
-            : setIsSuccess(true);
+        setSolving(true);
+        const fieldsArr = Object.values(fields); // Get current characters in fields state
         const updateFocus = (stateArr, focusArr) => {
-            stateArr.forEach((word) => {
+            stateArr === null || stateArr === void 0 ? void 0 : stateArr.forEach((word) => {
                 const charArray = [...word];
                 charArray.forEach((c) => {
                     const index = fieldsArr.indexOf(c);
@@ -112,7 +165,6 @@ function App() {
                 });
             });
         };
-        const fieldsArr = Object.values(fields);
         if (visualize) {
             for (const state of progressArr.slice(0, -1)) {
                 setWords(state);
@@ -133,33 +185,15 @@ function App() {
             }
         }
         else {
-            const lastSolution = progressArr.at(-2);
+            const lastSolution = (_a = progressArr.at(-2)) !== null && _a !== void 0 ? _a : [];
             const focusArr = [];
             updateFocus(lastSolution, focusArr);
             setFocus(focusArr);
             setWords(lastSolution);
         }
-        setDisabled([]);
         setSolving(false);
+        setDisabled([]);
     });
-    const handleClick = () => {
-        if (isFilled(fields)) {
-            setSolving(true);
-            const input = groupLetters(Object.values(fields));
-            console.log(`input: ${input}`);
-            try {
-                const progress = new LetterSquare(input).solve();
-                console.log(progress.at(-1));
-                showProgress(progress);
-            }
-            catch (err) {
-                console.error(err);
-            }
-        }
-    };
-    const handleVizChange = () => {
-        setVisualize((prevState) => !prevState);
-    };
     return (React.createElement(Box, { sx: {
             paddingTop: "5em",
             display: "flex",
@@ -169,11 +203,14 @@ function App() {
         React.createElement(Stack, { direction: "row", spacing: 2 }, Object.entries(fields)
             .slice(0, 3)
             .map(([key, value]) => (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[parseInt(key)] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, focused: focus[parseInt(key)], disabled: disabled[parseInt(key)] })))),
-        React.createElement(Grid, { container: true, justifyContent: "center", spacing: 30 },
+        React.createElement(Grid, { container: true, justifyContent: "center" },
             React.createElement(Grid, { item: true },
                 React.createElement(Stack, { direction: "column", spacing: 2 }, Object.entries(fields)
                     .slice(3, 6)
                     .map(([key, value]) => (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[parseInt(key)] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, focused: focus[parseInt(key)], disabled: disabled[parseInt(key)] }))))),
+            React.createElement(Grid, { item: true },
+                React.createElement(Stack, { direction: "column", justifyContent: "center", spacing: 5, m: 5 },
+                    React.createElement(Button, { variant: "outlined", color: "secondary", disabled: solving, onClick: generateRandom }, "Random Puzzle"))),
             React.createElement(Grid, { item: true },
                 React.createElement(Stack, { direction: "column", spacing: 2 }, Object.entries(fields)
                     .slice(6, 9)
@@ -185,12 +222,14 @@ function App() {
             React.createElement(Button, { color: "error", variant: "contained", onClick: resetFields }, "Reset"),
             React.createElement(LoadingButton, { loading: solving, variant: "contained", onClick: handleClick }, "Solve"),
             React.createElement(FormControlLabel, { disabled: solving, control: React.createElement(Checkbox, { checked: visualize, onChange: handleVizChange }), label: "Visualize" })),
-        React.createElement(LinearProgressWithLabel, { value: progress }),
-        React.createElement(React.Fragment, null, words === null || words === void 0 ? void 0 :
-            words.map((word, index) => (React.createElement("p", { key: index }, word))),
-            !solving && !isSuccess && (React.createElement("h1", null,
-                "No solution found using up to ",
-                LetterSquare.MOST_WORDS,
-                " words")))));
+        React.createElement(Box, { width: "20%", sx: { display: "flex" } },
+            React.createElement("h3", null, "Delay(ms):"),
+            React.createElement(Slider, { "aria-label": "Delay", value: delay, min: 1, max: 25, step: null, getAriaValueText: () => delay.toString(), marks: marks, onChange: handleSliderChange, disabled: !visualize || solving, sx: { ml: 5 } })),
+        React.createElement(LinearProgressWithLabel, { value: progress }), words === null || words === void 0 ? void 0 :
+        words.map((word, index) => (React.createElement("p", { key: index }, word))),
+        !solving && !isSuccess && (React.createElement("h2", null,
+            "No solution found using up to ",
+            LetterSquare.MOST_WORDS,
+            " words"))));
 }
 export default App;
