@@ -87,28 +87,26 @@ function App() {
     setVisualize((prevState) => !prevState);
   };
 
-  const handleClick = async () => {
+  const handleClick = () => {
     if (isFilled(fields)) {
       const input = groupLetters(Object.values(fields));
       console.log(`input: ${input}`);
 
-      try {
-        setSolving(true);
-        await new Promise((resolve) => setTimeout(resolve, 1)); // To allow update of `solve` state
-        const driver = new LetterSquare(input);
-        driver.solve().then(async (res) => {
+      setSolving(true);
+      const driver = new LetterSquare(input);
+      new Promise((resolve) => setTimeout(resolve, 1))
+        .then(() => driver.solve())
+        .then(async (res) => {
           console.log(res.at(-1));
+          await updateBoard(res);
           if (res.at(-1)![0] === "success") {
             setIsSuccess(true);
-            await updateBoard(res);
           } else {
             setIsSuccess(false);
           }
-          setSolving(false);
-        });
-      } catch (err) {
-        alert((err as Error).message);
-      }
+        })
+        .catch(alert)
+        .finally(() => setSolving(false));
     }
   };
 
@@ -254,7 +252,7 @@ function App() {
           </Stack>
         </Grid>
         <Grid item>
-          <Stack direction="column" justifyContent="center" spacing={5} m={5}>
+          <Stack direction="column" spacing={5} m={5}>
             <Button
               variant="outlined"
               color="secondary"

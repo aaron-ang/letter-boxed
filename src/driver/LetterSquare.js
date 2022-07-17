@@ -89,6 +89,7 @@ export default class LetterSquare {
      * with a gradually increasing limit for the number of words in the solution.
      */
     solve() {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             let maxWords = 1;
             while (maxWords <= LetterSquare.MOST_WORDS) {
@@ -101,6 +102,8 @@ export default class LetterSquare {
                 maxWords++;
             }
             console.log("No solution found using up to " + LetterSquare.MOST_WORDS + " words.");
+            const longest = (_a = __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f")) === null || _a === void 0 ? void 0 : _a.reduce((a, b) => a.length > b.length ? a : b);
+            __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f").push(longest);
             __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f").push(["fail"]);
             return __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f");
         });
