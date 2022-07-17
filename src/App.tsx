@@ -10,7 +10,10 @@ import Button from "@mui/material/Button";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
-import Slider from "@mui/material/Slider";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
 
 function App() {
   const defaultFields = {
@@ -76,31 +79,35 @@ function App() {
     window.location.reload(); // Only way to cancel promise chain
   };
 
-  const handleSliderChange = (event: Event, newValue: number | number[]) => {
-    if (typeof newValue === "number") {
-      setDelay(newValue);
-    }
+  const handleDelayChange = (event: SelectChangeEvent) => {
+    setDelay(parseInt(event.target.value));
   };
 
   const handleVizChange = () => {
     setVisualize((prevState) => !prevState);
   };
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (isFilled(fields)) {
       const input = groupLetters(Object.values(fields));
       console.log(`input: ${input}`);
+
       try {
-        const progress = new LetterSquare(input).solve();
-        console.log(progress.at(-1));
-        if (progress.at(-1)![0] === "success") {
-          setIsSuccess(true);
-          showProgress(progress);
-        } else {
-          setIsSuccess(false);
-        }
+        setSolving(true);
+        await new Promise((resolve) => setTimeout(resolve, 1)); // To allow update of `solve` state
+        const driver = new LetterSquare(input);
+        driver.solve().then(async (res) => {
+          console.log(res.at(-1));
+          if (res.at(-1)![0] === "success") {
+            setIsSuccess(true);
+            await updateBoard(res);
+          } else {
+            setIsSuccess(false);
+          }
+          setSolving(false);
+        });
       } catch (err) {
-        console.error(err);
+        alert((err as Error).message);
       }
     }
   };
@@ -112,8 +119,8 @@ function App() {
     setFocus([]);
     const keys = [...Array(12).keys()];
     const charSet = new Set<string>();
-    // TODO: Split into common characters and others
-    const commonChars = "ETAINOSHRDLUCM"
+    // Source: https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
+    const commonChars = "ETAINOSHRDLUCMFWY";
     while (charSet.size < keys.length) {
       charSet.add(
         commonChars.charAt(Math.floor(Math.random() * commonChars.length))
@@ -153,9 +160,8 @@ function App() {
     return res;
   };
 
-  const showProgress = async (progressArr: string[][]) => {
+  const updateBoard = async (progressArr: string[][]) => {
     setProgress(0);
-    setSolving(true);
     const fieldsArr = Object.values(fields); // Get current characters in fields state
 
     const updateFocus = (stateArr: string[], focusArr: boolean[]) => {
@@ -195,7 +201,6 @@ function App() {
       setFocus(focusArr);
       setWords(lastSolution);
     }
-    setSolving(false);
     setDisabled([]);
   };
 
@@ -257,6 +262,15 @@ function App() {
               onClick={generateRandom}
             >
               Random Puzzle
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() =>
+                window.open("https://www.nytimes.com/puzzles/letter-boxed")
+              }
+            >
+              Visit Site
             </Button>
             {/* <Button
               variant="outlined"
@@ -320,27 +334,29 @@ function App() {
         >
           Solve
         </LoadingButton>
+      </Stack>
+      <Stack direction="row" spacing={2}>
         <FormControlLabel
           disabled={solving}
           control={<Checkbox checked={visualize} onChange={handleVizChange} />}
           label="Visualize"
         />
+        <FormControl sx={{ minWidth: 80 }} disabled={!visualize || solving}>
+          <InputLabel id="delay-label">Delay(ms)</InputLabel>
+          <Select
+            value={delay.toString()}
+            labelId="delay-label"
+            label="Delay(ms)"
+            onChange={handleDelayChange}
+          >
+            <MenuItem value={1}>1</MenuItem>
+            <MenuItem value={5}>5</MenuItem>
+            <MenuItem value={50}>50</MenuItem>
+            <MenuItem value={100}>100</MenuItem>
+          </Select>
+        </FormControl>
       </Stack>
-      <Box width="20%" sx={{ display: "flex" }}>
-        <h3>Delay(ms):</h3>
-        <Slider
-          aria-label="Delay"
-          value={delay}
-          min={1}
-          max={25}
-          step={null}
-          getAriaValueText={() => delay.toString()}
-          marks={marks}
-          onChange={handleSliderChange}
-          disabled={!visualize || solving}
-          sx={{ ml: 5 }}
-        />
-      </Box>
+
       <LinearProgressWithLabel value={progress} />
       {words?.map((word, index) => (
         <p key={index}>{word}</p>
