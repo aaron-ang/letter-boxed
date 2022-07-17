@@ -117,9 +117,9 @@ function App() {
         const keys = [...Array(12).keys()];
         const charSet = new Set();
         // TODO: Split into common characters and others
-        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const commonChars = "ETAINOSHRDLUCM";
         while (charSet.size < keys.length) {
-            charSet.add(characters.charAt(Math.floor(Math.random() * characters.length)));
+            charSet.add(commonChars.charAt(Math.floor(Math.random() * commonChars.length)));
         }
         const charArray = [...charSet];
         const result = {};
