@@ -7,8 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import React from "react";
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import LetterSquare from "./driver/LetterSquare";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
@@ -63,6 +62,8 @@ function App() {
     const [isSuccess, setIsSuccess] = React.useState(true);
     const [delay, setDelay] = React.useState(5);
     const inputRefs = useRef([]);
+    const [prevInput, setPrevInput] = useState([]);
+    const [prevProcess, setprevProcess] = useState([]);
     const handleChange = (e) => {
         var _a;
         const value = e.target.value.replace(/[^a-z]/gi, "");
@@ -97,10 +98,13 @@ function App() {
             setSolving(true);
             const driver = new LetterSquare(input);
             new Promise((resolve) => setTimeout(resolve, 1))
-                .then(() => driver.solve())
+                .then(() => JSON.stringify(input) === JSON.stringify(prevInput)
+                ? prevProcess
+                : driver.solve())
                 .then((res) => __awaiter(this, void 0, void 0, function* () {
                 console.log(res.at(-1));
                 yield updateBoard(res);
+                setprevProcess(res);
                 if (res.at(-1)[0] === "success") {
                     setIsSuccess(true);
                 }
@@ -109,7 +113,11 @@ function App() {
                 }
             }))
                 .catch(alert)
-                .finally(() => setSolving(false));
+                .finally(() => {
+                setPrevInput(input);
+                console.log(`prevInput: ${prevInput}`);
+                setSolving(false);
+            });
         }
     };
     const generateRandom = () => {
