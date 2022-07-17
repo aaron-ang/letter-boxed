@@ -19,7 +19,10 @@ import Button from "@mui/material/Button";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
-import Slider from "@mui/material/Slider";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
 function App() {
     const defaultFields = {
         0: "",
@@ -81,34 +84,37 @@ function App() {
     const resetFields = () => {
         window.location.reload(); // Only way to cancel promise chain
     };
-    const handleSliderChange = (event, newValue) => {
-        if (typeof newValue === "number") {
-            setDelay(newValue);
-        }
+    const handleDelayChange = (event) => {
+        setDelay(parseInt(event.target.value));
     };
     const handleVizChange = () => {
         setVisualize((prevState) => !prevState);
     };
-    const handleClick = () => {
+    const handleClick = () => __awaiter(this, void 0, void 0, function* () {
         if (isFilled(fields)) {
             const input = groupLetters(Object.values(fields));
             console.log(`input: ${input}`);
             try {
-                const progress = new LetterSquare(input).solve();
-                console.log(progress.at(-1));
-                if (progress.at(-1)[0] === "success") {
-                    setIsSuccess(true);
-                    showProgress(progress);
-                }
-                else {
-                    setIsSuccess(false);
-                }
+                setSolving(true);
+                yield new Promise((resolve) => setTimeout(resolve, 1)); // To allow update of `solve` state
+                const driver = new LetterSquare(input);
+                driver.solve().then((res) => __awaiter(this, void 0, void 0, function* () {
+                    console.log(res.at(-1));
+                    if (res.at(-1)[0] === "success") {
+                        setIsSuccess(true);
+                        yield updateBoard(res);
+                    }
+                    else {
+                        setIsSuccess(false);
+                    }
+                    setSolving(false);
+                }));
             }
             catch (err) {
-                console.error(err);
+                alert(err.message);
             }
         }
-    };
+    });
     const generateRandom = () => {
         setWords([]);
         setProgress(0);
@@ -116,8 +122,8 @@ function App() {
         setFocus([]);
         const keys = [...Array(12).keys()];
         const charSet = new Set();
-        // TODO: Split into common characters and others
-        const commonChars = "ETAINOSHRDLUCM";
+        // Source: https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
+        const commonChars = "ETAINOSHRDLUCMFWY";
         while (charSet.size < keys.length) {
             charSet.add(commonChars.charAt(Math.floor(Math.random() * commonChars.length)));
         }
@@ -149,10 +155,9 @@ function App() {
         }
         return res;
     };
-    const showProgress = (progressArr) => __awaiter(this, void 0, void 0, function* () {
+    const updateBoard = (progressArr) => __awaiter(this, void 0, void 0, function* () {
         var _a;
         setProgress(0);
-        setSolving(true);
         const fieldsArr = Object.values(fields); // Get current characters in fields state
         const updateFocus = (stateArr, focusArr) => {
             stateArr === null || stateArr === void 0 ? void 0 : stateArr.forEach((word) => {
@@ -191,7 +196,6 @@ function App() {
             setFocus(focusArr);
             setWords(lastSolution);
         }
-        setSolving(false);
         setDisabled([]);
     });
     return (React.createElement(Box, { sx: {
@@ -210,7 +214,8 @@ function App() {
                     .map(([key, value]) => (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[parseInt(key)] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, focused: focus[parseInt(key)], disabled: disabled[parseInt(key)] }))))),
             React.createElement(Grid, { item: true },
                 React.createElement(Stack, { direction: "column", justifyContent: "center", spacing: 5, m: 5 },
-                    React.createElement(Button, { variant: "outlined", color: "secondary", disabled: solving, onClick: generateRandom }, "Random Puzzle"))),
+                    React.createElement(Button, { variant: "outlined", color: "secondary", disabled: solving, onClick: generateRandom }, "Random Puzzle"),
+                    React.createElement(Button, { variant: "outlined", color: "secondary", onClick: () => window.open("https://www.nytimes.com/puzzles/letter-boxed") }, "Visit Site"))),
             React.createElement(Grid, { item: true },
                 React.createElement(Stack, { direction: "column", spacing: 2 }, Object.entries(fields)
                     .slice(6, 9)
@@ -220,11 +225,16 @@ function App() {
             .map(([key, value]) => (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[parseInt(key)] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, focused: focus[parseInt(key)], disabled: disabled[parseInt(key)] })))),
         React.createElement(Stack, { direction: "row", spacing: 2, margin: 2 },
             React.createElement(Button, { color: "error", variant: "contained", onClick: resetFields }, "Reset"),
-            React.createElement(LoadingButton, { loading: solving, variant: "contained", onClick: handleClick }, "Solve"),
-            React.createElement(FormControlLabel, { disabled: solving, control: React.createElement(Checkbox, { checked: visualize, onChange: handleVizChange }), label: "Visualize" })),
-        React.createElement(Box, { width: "20%", sx: { display: "flex" } },
-            React.createElement("h3", null, "Delay(ms):"),
-            React.createElement(Slider, { "aria-label": "Delay", value: delay, min: 1, max: 25, step: null, getAriaValueText: () => delay.toString(), marks: marks, onChange: handleSliderChange, disabled: !visualize || solving, sx: { ml: 5 } })),
+            React.createElement(LoadingButton, { loading: solving, variant: "contained", onClick: handleClick }, "Solve")),
+        React.createElement(Stack, { direction: "row", spacing: 2 },
+            React.createElement(FormControlLabel, { disabled: solving, control: React.createElement(Checkbox, { checked: visualize, onChange: handleVizChange }), label: "Visualize" }),
+            React.createElement(FormControl, { sx: { minWidth: 80 }, disabled: !visualize || solving },
+                React.createElement(InputLabel, { id: "delay-label" }, "Delay(ms)"),
+                React.createElement(Select, { value: delay.toString(), labelId: "delay-label", label: "Delay(ms)", onChange: handleDelayChange },
+                    React.createElement(MenuItem, { value: 1 }, "1"),
+                    React.createElement(MenuItem, { value: 5 }, "5"),
+                    React.createElement(MenuItem, { value: 50 }, "50"),
+                    React.createElement(MenuItem, { value: 100 }, "100")))),
         React.createElement(LinearProgressWithLabel, { value: progress }), words === null || words === void 0 ? void 0 :
         words.map((word, index) => (React.createElement("p", { key: index }, word))),
         !solving && !isSuccess && (React.createElement("h2", null,

@@ -228,7 +228,7 @@ export default class LetterSquare {
    * Serves as a wrapper method for solveRB(), which it repeatedly calls
    * with a gradually increasing limit for the number of words in the solution.
    */
-  solve() {
+  async solve() {
     let maxWords = 1;
 
     while (maxWords <= LetterSquare.MOST_WORDS) {
