@@ -90,31 +90,28 @@ function App() {
     const handleVizChange = () => {
         setVisualize((prevState) => !prevState);
     };
-    const handleClick = () => __awaiter(this, void 0, void 0, function* () {
+    const handleClick = () => {
         if (isFilled(fields)) {
             const input = groupLetters(Object.values(fields));
             console.log(`input: ${input}`);
-            try {
-                setSolving(true);
-                yield new Promise((resolve) => setTimeout(resolve, 1)); // To allow update of `solve` state
-                const driver = new LetterSquare(input);
-                driver.solve().then((res) => __awaiter(this, void 0, void 0, function* () {
-                    console.log(res.at(-1));
-                    if (res.at(-1)[0] === "success") {
-                        setIsSuccess(true);
-                        yield updateBoard(res);
-                    }
-                    else {
-                        setIsSuccess(false);
-                    }
-                    setSolving(false);
-                }));
-            }
-            catch (err) {
-                alert(err.message);
-            }
+            setSolving(true);
+            const driver = new LetterSquare(input);
+            new Promise((resolve) => setTimeout(resolve, 1))
+                .then(() => driver.solve())
+                .then((res) => __awaiter(this, void 0, void 0, function* () {
+                console.log(res.at(-1));
+                yield updateBoard(res);
+                if (res.at(-1)[0] === "success") {
+                    setIsSuccess(true);
+                }
+                else {
+                    setIsSuccess(false);
+                }
+            }))
+                .catch(alert)
+                .finally(() => setSolving(false));
         }
-    });
+    };
     const generateRandom = () => {
         setWords([]);
         setProgress(0);
@@ -213,7 +210,7 @@ function App() {
                     .slice(3, 6)
                     .map(([key, value]) => (React.createElement(TextField, { sx: sx, key: key, inputProps: inputProps, name: key, ref: (el) => (inputRefs.current[parseInt(key)] = el), value: value, onChange: handleChange, onKeyDown: handleBackspace, focused: focus[parseInt(key)], disabled: disabled[parseInt(key)] }))))),
             React.createElement(Grid, { item: true },
-                React.createElement(Stack, { direction: "column", justifyContent: "center", spacing: 5, m: 5 },
+                React.createElement(Stack, { direction: "column", spacing: 5, m: 5 },
                     React.createElement(Button, { variant: "outlined", color: "secondary", disabled: solving, onClick: generateRandom }, "Random Puzzle"),
                     React.createElement(Button, { variant: "outlined", color: "secondary", onClick: () => window.open("https://www.nytimes.com/puzzles/letter-boxed") }, "Visit Site"))),
             React.createElement(Grid, { item: true },

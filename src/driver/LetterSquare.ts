@@ -244,6 +244,10 @@ export default class LetterSquare {
     console.log(
       "No solution found using up to " + LetterSquare.MOST_WORDS + " words."
     );
+    const longest = this.#solvingProcess?.reduce((a, b) =>
+      a.length > b.length ? a : b
+    );
+    this.#solvingProcess.push(longest);
     this.#solvingProcess.push(["fail"]);
     return this.#solvingProcess;
   }
