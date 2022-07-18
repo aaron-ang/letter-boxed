@@ -36,6 +36,7 @@ function App() {
     style: {
       textAlign: "center" as "center",
     },
+    "aria-label": "input",
   };
   const sx = { width: "4em" };
   const marks = [
@@ -77,7 +78,7 @@ function App() {
   };
 
   const resetFields = () => {
-    window.location.reload(); // Only way to cancel promise chain
+    location.reload(); // Only way to cancel promise chain
   };
 
   const handleDelayChange = (event: SelectChangeEvent) => {
@@ -88,35 +89,32 @@ function App() {
     setVisualize((prevState) => !prevState);
   };
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (isFilled(fields)) {
       const input = groupLetters(Object.values(fields));
       console.log(`input: ${input}`);
 
       setSolving(true);
       const driver = new LetterSquare(input);
-      new Promise((resolve) => setTimeout(resolve, 1))
-        .then(() =>
+      try {
+        const process =
           JSON.stringify(input) === JSON.stringify(prevInput)
             ? prevProcess
-            : driver.solve()
-        )
-        .then(async (res) => {
-          console.log(res.at(-1));
-          await updateBoard(res);
-          setprevProcess(res)
-          if (res.at(-1)![0] === "success") {
-            setIsSuccess(true);
-          } else {
-            setIsSuccess(false);
-          }
-        })
-        .catch(alert)
-        .finally(() => {
-          setPrevInput(input);
-          console.log(`prevInput: ${prevInput}`);
-          setSolving(false);
-        });
+            : // Set timeout to display loading animation
+              (await new Promise((resolve) => setTimeout(resolve, 500)),
+              await driver.solve());
+        console.log(process.at(-1));
+        await updateBoard(process);
+        setprevProcess(process);
+        process.at(-1)![0] === "success"
+          ? setIsSuccess(true)
+          : setIsSuccess(false);
+      } catch (err) {
+        alert(err);
+      } finally {
+        setPrevInput(input);
+        setSolving(false);
+      }
     }
   };
 
@@ -128,7 +126,7 @@ function App() {
     const keys = [...Array(12).keys()];
     const charSet = new Set<string>();
     // Source: https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
-    const commonChars = "ETAINOSHRDLUCMFWY";
+    const commonChars = "ETAINOSHRDLUCMFYW";
     while (charSet.size < keys.length) {
       charSet.add(
         commonChars.charAt(Math.floor(Math.random() * commonChars.length))
@@ -278,7 +276,7 @@ function App() {
                 window.open("https://www.nytimes.com/puzzles/letter-boxed")
               }
             >
-              Visit Site
+              Visit NYT Site
             </Button>
             {/* <Button
               variant="outlined"

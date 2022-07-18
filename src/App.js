@@ -44,6 +44,7 @@ function App() {
         style: {
             textAlign: "center",
         },
+        "aria-label": "input",
     };
     const sx = { width: "4em" };
     const marks = [
@@ -83,7 +84,7 @@ function App() {
         }
     };
     const resetFields = () => {
-        window.location.reload(); // Only way to cancel promise chain
+        location.reload(); // Only way to cancel promise chain
     };
     const handleDelayChange = (event) => {
         setDelay(parseInt(event.target.value));
@@ -91,35 +92,34 @@ function App() {
     const handleVizChange = () => {
         setVisualize((prevState) => !prevState);
     };
-    const handleClick = () => {
+    const handleClick = () => __awaiter(this, void 0, void 0, function* () {
         if (isFilled(fields)) {
             const input = groupLetters(Object.values(fields));
             console.log(`input: ${input}`);
             setSolving(true);
             const driver = new LetterSquare(input);
-            new Promise((resolve) => setTimeout(resolve, 1))
-                .then(() => JSON.stringify(input) === JSON.stringify(prevInput)
-                ? prevProcess
-                : driver.solve())
-                .then((res) => __awaiter(this, void 0, void 0, function* () {
-                console.log(res.at(-1));
-                yield updateBoard(res);
-                setprevProcess(res);
-                if (res.at(-1)[0] === "success") {
-                    setIsSuccess(true);
-                }
-                else {
-                    setIsSuccess(false);
-                }
-            }))
-                .catch(alert)
-                .finally(() => {
+            try {
+                const process = JSON.stringify(input) === JSON.stringify(prevInput)
+                    ? prevProcess
+                    : // Set timeout to display loading animation
+                        (yield new Promise((resolve) => setTimeout(resolve, 500)),
+                            yield driver.solve());
+                console.log(process.at(-1));
+                yield updateBoard(process);
+                setprevProcess(process);
+                process.at(-1)[0] === "success"
+                    ? setIsSuccess(true)
+                    : setIsSuccess(false);
+            }
+            catch (err) {
+                alert(err);
+            }
+            finally {
                 setPrevInput(input);
-                console.log(`prevInput: ${prevInput}`);
                 setSolving(false);
-            });
+            }
         }
-    };
+    });
     const generateRandom = () => {
         setWords([]);
         setProgress(0);
@@ -128,7 +128,7 @@ function App() {
         const keys = [...Array(12).keys()];
         const charSet = new Set();
         // Source: https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
-        const commonChars = "ETAINOSHRDLUCMFWY";
+        const commonChars = "ETAINOSHRDLUCMFYW";
         while (charSet.size < keys.length) {
             charSet.add(commonChars.charAt(Math.floor(Math.random() * commonChars.length)));
         }
@@ -220,7 +220,7 @@ function App() {
             React.createElement(Grid, { item: true },
                 React.createElement(Stack, { direction: "column", spacing: 5, m: 5 },
                     React.createElement(Button, { variant: "outlined", color: "secondary", disabled: solving, onClick: generateRandom }, "Random Puzzle"),
-                    React.createElement(Button, { variant: "outlined", color: "secondary", onClick: () => window.open("https://www.nytimes.com/puzzles/letter-boxed") }, "Visit Site"))),
+                    React.createElement(Button, { variant: "outlined", color: "secondary", onClick: () => window.open("https://www.nytimes.com/puzzles/letter-boxed") }, "Visit NYT Site"))),
             React.createElement(Grid, { item: true },
                 React.createElement(Stack, { direction: "column", spacing: 2 }, Object.entries(fields)
                     .slice(6, 9)
