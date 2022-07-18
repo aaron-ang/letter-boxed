@@ -90,31 +90,29 @@ function App() {
   };
 
   const handleClick = async () => {
-    if (isFilled(fields)) {
-      const input = groupLetters(Object.values(fields));
+    try {
+      const input = groupLetters(fields);
       console.log(`input: ${input}`);
-
       setSolving(true);
       const driver = new LetterSquare(input);
-      try {
-        const process =
-          JSON.stringify(input) === JSON.stringify(prevInput)
-            ? prevProcess
-            : // Set timeout to display loading animation
-              (await new Promise((resolve) => setTimeout(resolve, 500)),
-              await driver.solve());
-        console.log(process.at(-1));
-        await updateBoard(process);
-        setprevProcess(process);
-        process.at(-1)![0] === "success"
-          ? setIsSuccess(true)
-          : setIsSuccess(false);
-      } catch (err) {
-        alert(err);
-      } finally {
-        setPrevInput(input);
-        setSolving(false);
-      }
+      const process =
+        JSON.stringify(input) === JSON.stringify(prevInput)
+          ? prevProcess
+          : // Set timeout to display loading animation
+            (await new Promise((resolve) => setTimeout(resolve, 500)),
+            await driver.solve());
+      console.log(process.at(-1));
+      await updateBoard(process);
+      setprevProcess(process);
+      process.at(-1)![0] === "success"
+        ? setIsSuccess(true)
+        : setIsSuccess(false);
+      setPrevInput(input);
+    } catch (err) {
+      alert(err);
+      return;
+    } finally {
+      setSolving(false);
     }
   };
 
@@ -145,11 +143,11 @@ function App() {
     // setFocus([]);
   };
 
-  const isFilled = (fields: Record<number, string>) => {
-    return !Object.values(fields).includes("");
-  };
-
-  const groupLetters = (arr: string[]) => {
+  const groupLetters = (fields: Record<number, string>) => {
+    if (Object.values(fields).includes("")) {
+      throw new Error("Please fill out all fields");
+    }
+    const arr = Object.values(fields);
     const res: string[] = [];
     let string = "";
     let i = 0;

@@ -93,31 +93,30 @@ function App() {
         setVisualize((prevState) => !prevState);
     };
     const handleClick = () => __awaiter(this, void 0, void 0, function* () {
-        if (isFilled(fields)) {
-            const input = groupLetters(Object.values(fields));
+        try {
+            const input = groupLetters(fields);
             console.log(`input: ${input}`);
             setSolving(true);
             const driver = new LetterSquare(input);
-            try {
-                const process = JSON.stringify(input) === JSON.stringify(prevInput)
-                    ? prevProcess
-                    : // Set timeout to display loading animation
-                        (yield new Promise((resolve) => setTimeout(resolve, 500)),
-                            yield driver.solve());
-                console.log(process.at(-1));
-                yield updateBoard(process);
-                setprevProcess(process);
-                process.at(-1)[0] === "success"
-                    ? setIsSuccess(true)
-                    : setIsSuccess(false);
-            }
-            catch (err) {
-                alert(err);
-            }
-            finally {
-                setPrevInput(input);
-                setSolving(false);
-            }
+            const process = JSON.stringify(input) === JSON.stringify(prevInput)
+                ? prevProcess
+                : // Set timeout to display loading animation
+                    (yield new Promise((resolve) => setTimeout(resolve, 500)),
+                        yield driver.solve());
+            console.log(process.at(-1));
+            yield updateBoard(process);
+            setprevProcess(process);
+            process.at(-1)[0] === "success"
+                ? setIsSuccess(true)
+                : setIsSuccess(false);
+            setPrevInput(input);
+        }
+        catch (err) {
+            alert(err);
+            return;
+        }
+        finally {
+            setSolving(false);
         }
     });
     const generateRandom = () => {
@@ -143,10 +142,11 @@ function App() {
         // setIsSuccess(true);
         // setFocus([]);
     };
-    const isFilled = (fields) => {
-        return !Object.values(fields).includes("");
-    };
-    const groupLetters = (arr) => {
+    const groupLetters = (fields) => {
+        if (Object.values(fields).includes("")) {
+            throw new Error("Please fill out all fields");
+        }
+        const arr = Object.values(fields);
         const res = [];
         let string = "";
         let i = 0;
