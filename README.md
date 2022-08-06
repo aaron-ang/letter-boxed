@@ -1,6 +1,6 @@
 Inspired by The NYTimes' [Letter Boxed](https://www.nytimes.com/puzzles/letter-boxed) Game
 
-Check out the visualizer at https://aaron-ang.github.io/letter-square
+Check out the visualizer at https://aaron-ang.github.io/letter-boxed
 
 New features
 - Created dropdown to customize visualization delay duration
