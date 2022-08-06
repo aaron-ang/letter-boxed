@@ -39,12 +39,6 @@ function App() {
     "aria-label": "input",
   };
   const sx = { width: "4em" };
-  const marks = [
-    { value: 1, label: "1" },
-    { value: 5, label: "5" },
-    { value: 10, label: "10" },
-    { value: 25, label: "25" },
-  ];
 
   const [fields, setFields] = useState<Record<number, string>>(defaultFields);
   const [disabled, setDisabled] = useState<boolean[]>([]); // To allow changing of TextField state while visualizing
@@ -134,13 +128,6 @@ function App() {
     const result: Record<number, string> = {};
     keys.forEach((key) => (result[key] = charArray[key]));
     setFields(result);
-  };
-
-  const getPuzzle = () => {
-    // setWords([]);
-    // setProgress(0);
-    // setIsSuccess(true);
-    // setFocus([]);
   };
 
   const groupLetters = (fields: Record<number, string>) => {
@@ -276,14 +263,6 @@ function App() {
             >
               Visit NYT Site
             </Button>
-            {/* <Button
-              variant="outlined"
-              color="secondary"
-              disabled={solving}
-              onClick={getPuzzle}
-            >
-              Today's Puzzle
-            </Button> */}
           </Stack>
         </Grid>
         <Grid item>
