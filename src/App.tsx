@@ -1,5 +1,6 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import LetterSquare from "./driver/LetterSquare";
+import MyAppBar from "./components/MyAppBar";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Grid from "@mui/material/Grid";
@@ -46,9 +47,9 @@ function App() {
   const [solving, setSolving] = useState(false);
   const [words, setWords] = useState<string[]>([]);
   const [visualize, setVisualize] = useState(false);
-  const [progress, setProgress] = React.useState(0);
-  const [isSuccess, setIsSuccess] = React.useState(true);
-  const [delay, setDelay] = React.useState(5);
+  const [progress, setProgress] = useState(0);
+  const [isSuccess, setIsSuccess] = useState(true);
+  const [delay, setDelay] = useState(5);
   const inputRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [prevInput, setPrevInput] = useState<string[]>([]);
   const [prevProcess, setprevProcess] = useState<string[][]>([]);
@@ -196,158 +197,163 @@ function App() {
   };
 
   return (
-    <Box
-      sx={{
-        paddingTop: "5em",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-    >
-      <Stack direction="row" spacing={2}>
-        {Object.entries(fields)
-          .slice(0, 3)
-          .map(([key, value]) => (
-            <TextField
-              sx={sx}
-              key={key}
-              inputProps={inputProps}
-              name={key}
-              ref={(el) => (inputRefs.current[parseInt(key)] = el)}
-              value={value}
-              onChange={handleChange}
-              onKeyDown={handleBackspace}
-              focused={focus[parseInt(key)]}
-              disabled={disabled[parseInt(key)]}
-            />
-          ))}
-      </Stack>
+    <>
+      <MyAppBar />
+      <Box
+        sx={{
+          paddingTop: "5em",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Stack direction="row" spacing={2}>
+          {Object.entries(fields)
+            .slice(0, 3)
+            .map(([key, value]) => (
+              <TextField
+                sx={sx}
+                key={key}
+                inputProps={inputProps}
+                name={key}
+                ref={(el) => (inputRefs.current[parseInt(key)] = el)}
+                value={value}
+                onChange={handleChange}
+                onKeyDown={handleBackspace}
+                focused={focus[parseInt(key)]}
+                disabled={disabled[parseInt(key)]}
+              />
+            ))}
+        </Stack>
 
-      <Grid container justifyContent="center">
-        <Grid item>
-          <Stack direction="column" spacing={2}>
-            {Object.entries(fields)
-              .slice(3, 6)
-              .map(([key, value]) => (
-                <TextField
-                  sx={sx}
-                  key={key}
-                  inputProps={inputProps}
-                  name={key}
-                  ref={(el) => (inputRefs.current[parseInt(key)] = el)}
-                  value={value}
-                  onChange={handleChange}
-                  onKeyDown={handleBackspace}
-                  focused={focus[parseInt(key)]}
-                  disabled={disabled[parseInt(key)]}
-                />
-              ))}
-          </Stack>
+        <Grid container justifyContent="center">
+          <Grid item>
+            <Stack direction="column" spacing={2}>
+              {Object.entries(fields)
+                .slice(3, 6)
+                .map(([key, value]) => (
+                  <TextField
+                    sx={sx}
+                    key={key}
+                    inputProps={inputProps}
+                    name={key}
+                    ref={(el) => (inputRefs.current[parseInt(key)] = el)}
+                    value={value}
+                    onChange={handleChange}
+                    onKeyDown={handleBackspace}
+                    focused={focus[parseInt(key)]}
+                    disabled={disabled[parseInt(key)]}
+                  />
+                ))}
+            </Stack>
+          </Grid>
+          <Grid item>
+            <Stack direction="column" spacing={5} m={5}>
+              <Button
+                variant="outlined"
+                color="secondary"
+                disabled={solving}
+                onClick={generateRandom}
+              >
+                Random Puzzle
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() =>
+                  window.open("https://www.nytimes.com/puzzles/letter-boxed")
+                }
+              >
+                Visit NYT Site
+              </Button>
+            </Stack>
+          </Grid>
+          <Grid item>
+            <Stack direction="column" spacing={2}>
+              {Object.entries(fields)
+                .slice(6, 9)
+                .map(([key, value]) => (
+                  <TextField
+                    sx={sx}
+                    key={key}
+                    inputProps={inputProps}
+                    name={key}
+                    ref={(el) => (inputRefs.current[parseInt(key)] = el)}
+                    value={value}
+                    onChange={handleChange}
+                    onKeyDown={handleBackspace}
+                    focused={focus[parseInt(key)]}
+                    disabled={disabled[parseInt(key)]}
+                  />
+                ))}
+            </Stack>
+          </Grid>
         </Grid>
-        <Grid item>
-          <Stack direction="column" spacing={5} m={5}>
-            <Button
-              variant="outlined"
-              color="secondary"
-              disabled={solving}
-              onClick={generateRandom}
-            >
-              Random Puzzle
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() =>
-                window.open("https://www.nytimes.com/puzzles/letter-boxed")
-              }
-            >
-              Visit NYT Site
-            </Button>
-          </Stack>
-        </Grid>
-        <Grid item>
-          <Stack direction="column" spacing={2}>
-            {Object.entries(fields)
-              .slice(6, 9)
-              .map(([key, value]) => (
-                <TextField
-                  sx={sx}
-                  key={key}
-                  inputProps={inputProps}
-                  name={key}
-                  ref={(el) => (inputRefs.current[parseInt(key)] = el)}
-                  value={value}
-                  onChange={handleChange}
-                  onKeyDown={handleBackspace}
-                  focused={focus[parseInt(key)]}
-                  disabled={disabled[parseInt(key)]}
-                />
-              ))}
-          </Stack>
-        </Grid>
-      </Grid>
 
-      <Stack direction="row" spacing={2}>
-        {Object.entries(fields)
-          .slice(9)
-          .map(([key, value]) => (
-            <TextField
-              sx={sx}
-              key={key}
-              inputProps={inputProps}
-              name={key}
-              ref={(el) => (inputRefs.current[parseInt(key)] = el)}
-              value={value}
-              onChange={handleChange}
-              onKeyDown={handleBackspace}
-              focused={focus[parseInt(key)]}
-              disabled={disabled[parseInt(key)]}
-            />
-          ))}
-      </Stack>
+        <Stack direction="row" spacing={2}>
+          {Object.entries(fields)
+            .slice(9)
+            .map(([key, value]) => (
+              <TextField
+                sx={sx}
+                key={key}
+                inputProps={inputProps}
+                name={key}
+                ref={(el) => (inputRefs.current[parseInt(key)] = el)}
+                value={value}
+                onChange={handleChange}
+                onKeyDown={handleBackspace}
+                focused={focus[parseInt(key)]}
+                disabled={disabled[parseInt(key)]}
+              />
+            ))}
+        </Stack>
 
-      <Stack direction="row" spacing={2} margin={2}>
-        <Button color="error" variant="contained" onClick={resetFields}>
-          Reset
-        </Button>
-        <LoadingButton
-          loading={solving}
-          variant="contained"
-          onClick={handleClick}
-        >
-          Solve
-        </LoadingButton>
-      </Stack>
-      <Stack direction="row" spacing={2}>
-        <FormControlLabel
-          disabled={solving}
-          control={<Checkbox checked={visualize} onChange={handleVizChange} />}
-          label="Visualize"
-        />
-        <FormControl sx={{ minWidth: 80 }} disabled={!visualize || solving}>
-          <InputLabel id="delay-label">Delay(ms)</InputLabel>
-          <Select
-            value={delay.toString()}
-            labelId="delay-label"
-            label="Delay(ms)"
-            onChange={handleDelayChange}
+        <Stack direction="row" spacing={2} margin={2}>
+          <Button color="error" variant="contained" onClick={resetFields}>
+            Reset
+          </Button>
+          <LoadingButton
+            loading={solving}
+            variant="contained"
+            onClick={handleClick}
           >
-            <MenuItem value={1}>1</MenuItem>
-            <MenuItem value={5}>5</MenuItem>
-            <MenuItem value={50}>50</MenuItem>
-            <MenuItem value={100}>100</MenuItem>
-          </Select>
-        </FormControl>
-      </Stack>
+            Solve
+          </LoadingButton>
+        </Stack>
+        <Stack direction="row" spacing={2}>
+          <FormControlLabel
+            disabled={solving}
+            control={
+              <Checkbox checked={visualize} onChange={handleVizChange} />
+            }
+            label="Visualize"
+          />
+          <FormControl sx={{ minWidth: 80 }} disabled={!visualize || solving}>
+            <InputLabel id="delay-label">Delay(ms)</InputLabel>
+            <Select
+              value={delay.toString()}
+              labelId="delay-label"
+              label="Delay(ms)"
+              onChange={handleDelayChange}
+            >
+              <MenuItem value={1}>1</MenuItem>
+              <MenuItem value={5}>5</MenuItem>
+              <MenuItem value={50}>50</MenuItem>
+              <MenuItem value={100}>100</MenuItem>
+            </Select>
+          </FormControl>
+        </Stack>
 
-      <LinearProgressWithLabel value={progress} />
-      {words?.map((word, index) => (
-        <p key={index}>{word}</p>
-      ))}
-      {!solving && !isSuccess && (
-        <h2>No solution found using up to {LetterSquare.MOST_WORDS} words</h2>
-      )}
-    </Box>
+        <LinearProgressWithLabel value={progress} />
+        {words?.map((word, index) => (
+          <p key={index}>{word}</p>
+        ))}
+        {!solving && !isSuccess && (
+          <h2>No solution found using up to {LetterSquare.MOST_WORDS} words</h2>
+        )}
+      </Box>
+    </>
   );
 }
 
