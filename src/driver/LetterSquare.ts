@@ -321,8 +321,12 @@ export default class LetterSquare {
    * After exhausting all possible solutions, returns the best solution found.
    */
   async findBest(numWords: number): Promise<string[]> {
+    const solveStart = Date.now();
     this.#solveRBVoid(0, 0, numWords);
+    const sortStart = Date.now();
+    console.log(`Solving took ${(sortStart - solveStart) / 1000}s`);
     this.#solutions.sort(this.compareSolution);
-    return this.#solutions[0];
+    console.log(`Sorting took ${Date.now() - sortStart}ms`);
+    return this.#solutions.length === 0 ? [] : this.#solutions[0];
   }
 }
