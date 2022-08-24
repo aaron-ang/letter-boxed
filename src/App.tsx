@@ -53,10 +53,12 @@ function App() {
   const inputRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [prevInput, setPrevInput] = useState<string[]>([]);
   const [prevProcess, setprevProcess] = useState<string[][]>([]);
+  const [best, setBest] = useState<string[]>([]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^a-z]/gi, "");
     const name = e.target.name;
+    setWords([]);
     setFields({ ...fields, [name]: value.toUpperCase() });
     const nextInput = inputRefs.current[parseInt(name) + 1];
     if (nextInput != null && value !== "") {
@@ -88,8 +90,8 @@ function App() {
     try {
       const input = groupLetters(fields);
       console.log(`input: ${input}`);
-      setSolving(true);
       const driver = new LetterSquare(input);
+      setSolving(true);
       const process =
         JSON.stringify(input) === JSON.stringify(prevInput)
           ? prevProcess
@@ -97,12 +99,38 @@ function App() {
             (await new Promise((resolve) => setTimeout(resolve, 500)),
             await driver.solve());
       console.log(process.at(-1));
+
       await updateBoard(process);
       setprevProcess(process);
+
       process.at(-1)![0] === "success"
         ? setIsSuccess(true)
         : setIsSuccess(false);
+
       setPrevInput(input);
+    } catch (err) {
+      alert(err);
+      return;
+    } finally {
+      setSolving(false);
+    }
+  };
+
+  const findBest = async () => {
+    try {
+      const input = groupLetters(fields);
+      const driver = new LetterSquare(input);
+      if (JSON.stringify(best) === JSON.stringify(words)) {
+        return;
+      }
+      console.log(`Looking for the best solution of length ${words.length}...`);
+      setSolving(true);
+      setWords([]);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      const bestSolution = await driver.findBest(words.length);
+      setWords(bestSolution);
+      setBest(bestSolution);
+      console.log(`Best solution is ${bestSolution}`);
     } catch (err) {
       alert(err);
       return;
@@ -187,11 +215,11 @@ function App() {
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     } else {
-      const lastSolution = progressArr.at(-2) ?? [];
+      const solution = progressArr.at(-2) ?? [];
       const focusArr: boolean[] = [];
-      updateFocus(lastSolution, focusArr);
+      updateFocus(solution, focusArr);
       setFocus(focusArr);
-      setWords(lastSolution);
+      setWords(solution);
     }
     setDisabled([]);
   };
@@ -313,13 +341,23 @@ function App() {
           <Button color="error" variant="contained" onClick={resetFields}>
             Reset
           </Button>
-          <LoadingButton
-            loading={solving}
-            variant="contained"
-            onClick={handleClick}
-          >
-            Solve
-          </LoadingButton>
+          {words.length === 0 ? (
+            <LoadingButton
+              loading={solving}
+              variant="contained"
+              onClick={handleClick}
+            >
+              Solve
+            </LoadingButton>
+          ) : (
+            <LoadingButton
+              loading={solving}
+              variant="contained"
+              onClick={findBest}
+            >
+              Find Best
+            </LoadingButton>
+          )}
         </Stack>
         <Stack direction="row" spacing={2}>
           <FormControlLabel
