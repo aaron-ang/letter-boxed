@@ -98,12 +98,12 @@ function App() {
           : // Set timeout to display loading animation
             (await new Promise((resolve) => setTimeout(resolve, 500)),
             await driver.solve());
-      console.log(process.at(-1));
+      console.log(process[process.length - 1]);
 
       await updateBoard(process);
       setprevProcess(process);
 
-      process.at(-1)![0] === "success"
+      process[process.length - 1][0] === "success"
         ? setIsSuccess(true)
         : setIsSuccess(false);
 
@@ -215,7 +215,7 @@ function App() {
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     } else {
-      const solution = progressArr.at(-2) ?? [];
+      const solution = progressArr[progressArr.length - 2] ?? [];
       const focusArr: boolean[] = [];
       updateFocus(solution, focusArr);
       setFocus(focusArr);
@@ -359,6 +359,7 @@ function App() {
             </LoadingButton>
           )}
         </Stack>
+        {/* TODO: Make visualize checkbox into button? */}
         <Stack direction="row" spacing={2}>
           <FormControlLabel
             disabled={solving}
