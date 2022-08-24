@@ -23,6 +23,9 @@ export default class LetterSquare {
   // Words to build visualizer
   #solvingProcess: string[][];
 
+  // To find best solution in solveRBVoid
+  #solutions: string[][] = [];
+
   /*
    * Constructor for a puzzle with the specified sides, where each
    * side is a string containing the 3 letters from one side of the square.
@@ -51,10 +54,6 @@ export default class LetterSquare {
     for (let i = 0; i < LetterSquare.MOST_WORDS; i++) {
       this.#words[i] = "";
     }
-  }
-
-  get words(): string[] {
-    return this.#words;
   }
 
   /*
@@ -196,7 +195,7 @@ export default class LetterSquare {
       const currLetter = this.#letters[i];
       // Check if valid to add letter
       if (this.#isValid(currLetter, wordNum, charNum)) {
-        // Expand current word in solution by adding one letter (delay 300ms)
+        // Expand current word in solution by adding one letter
         this.#addLetter(currLetter, wordNum);
         if (this.#solveRB(wordNum, charNum + 1, maxWords)) {
           return true;
@@ -228,7 +227,7 @@ export default class LetterSquare {
    * Serves as a wrapper method for solveRB(), which it repeatedly calls
    * with a gradually increasing limit for the number of words in the solution.
    */
-  async solve() {
+  async solve(): Promise<string[][]> {
     let maxWords = 1;
 
     while (maxWords <= LetterSquare.MOST_WORDS) {
@@ -250,5 +249,80 @@ export default class LetterSquare {
     this.#solvingProcess.push(longest);
     this.#solvingProcess.push(["fail"]);
     return this.#solvingProcess;
+  }
+
+  /*
+   * solveRB - the key recursive backtracking method.
+   * Handles the process of adding one letter to the word at position
+   * wordNum as part of a solution with at most maxWords words.
+   * Returns true if a solution has been found, and false otherwise.
+   *
+   * Since this is a private helper method, we assume that only
+   * appropriate values will be passed in.
+   */
+  #solveRBVoid(wordNum: number, charNum: number, maxWords: number): void {
+    // First base case: puzzle solved
+    if (
+      this.#allLettersUsed() &&
+      LetterSquare.dictionary.hasFullWord(this.#words[wordNum]) &&
+      this.#words[wordNum].length >= 3
+    ) {
+      this.#solutions.push(this.#words.filter((word) => word !== ""));
+      return;
+    }
+    // Second base case: wordNum is too big, given the value of maxWords
+    if (wordNum >= maxWords) {
+      return;
+    }
+
+    // Loop through letters
+    for (let i = 0; i < this.#letters.length; i++) {
+      const currLetter = this.#letters[i];
+      // Check if valid to add letter
+      if (this.#isValid(currLetter, wordNum, charNum)) {
+        // Expand current word in solution by adding one letter
+        this.#addLetter(currLetter, wordNum);
+        this.#solveRBVoid(wordNum, charNum + 1, maxWords);
+
+        const currWord = this.#words[wordNum];
+        // Possible solutions exhausted, move to next word
+        if (
+          currWord.length >= 3 &&
+          LetterSquare.dictionary.hasFullWord(currWord)
+        ) {
+          // Append state to solvingProcess
+          this.#solvingProcess.push(this.#words.filter((word) => word !== ""));
+          this.#solveRBVoid(wordNum + 1, 0, maxWords);
+        }
+
+        // Recursive call returns to current stack frame: Letter is not viable
+        this.#removeLetter(wordNum);
+      }
+    }
+    // Backtrack
+    return;
+  }
+
+  /*
+   * compareSolution - compare function to sort the solutions.
+   * Compare solutions based on 1. shortest number of total letters, 2. earliest in alphabetical order
+   */
+  compareSolution(a: string[], b: string[]): number {
+    return (
+      a.join("").length - b.join("").length ||
+      a.join("").localeCompare(b.join(""))
+    );
+  }
+
+  /*
+   * findBest - the method that the client calls after solve() which returns an array of all solutions with numWords.
+   * Serves as a wrapper method for solveRBVoid().
+   * All solutions will have at most `numWords` words.
+   * After exhausting all possible solutions, returns the best solution found.
+   */
+  async findBest(numWords: number): Promise<string[]> {
+    this.#solveRBVoid(0, 0, numWords);
+    this.#solutions.sort(this.compareSolution);
+    return this.#solutions[0];
   }
 }
