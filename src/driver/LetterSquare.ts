@@ -243,8 +243,10 @@ export default class LetterSquare {
     console.log(
       "No solution found using up to " + LetterSquare.MOST_WORDS + " words."
     );
-    const longest = this.#solvingProcess?.reduce((a, b) =>
-      a.length > b.length ? a : b
+    // Find the longest in state in the call stack
+    const longest = this.#solvingProcess?.reduce(
+      (a, b) => (a.length > b.length ? a : b),
+      [] // initialValue
     );
     this.#solvingProcess.push(longest);
     this.#solvingProcess.push(["fail"]);
@@ -324,7 +326,9 @@ export default class LetterSquare {
     const solveStart = Date.now();
     this.#solveRBVoid(0, 0, numWords);
     const sortStart = Date.now();
-    console.log(`Solving took ${(sortStart - solveStart) / 1000}s`);
+    console.log(
+      `It took ${(sortStart - solveStart) / 1000}s to get all solutions.`
+    );
     this.#solutions.sort(this.compareSolution);
     console.log(`Sorting took ${Date.now() - sortStart}ms`);
     return this.#solutions.length === 0 ? [] : this.#solutions[0];
