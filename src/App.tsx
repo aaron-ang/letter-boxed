@@ -3,7 +3,7 @@ import LetterSquare from "./driver/LetterSquare";
 import MyAppBar from "./components/MyAppBar";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
-import Grid from "@mui/material/Grid";
+import Grid from "@mui/material/Unstable_Grid2";
 import TextField from "@mui/material/TextField";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Button from "@mui/material/Button";
@@ -125,12 +125,9 @@ function App() {
       }
       console.log(`Looking for the best solution of length ${words.length}...`);
       setSolving(true);
-      setWords([]);
       await new Promise((resolve) => setTimeout(resolve, 500));
       const bestSolution = await driver.findBest(words.length);
-      setWords(bestSolution);
       setBest(bestSolution);
-      console.log(`Best solution is ${bestSolution}`);
     } catch (err) {
       alert(err);
       return;
@@ -141,6 +138,7 @@ function App() {
 
   const generateRandom = () => {
     setWords([]);
+    setBest([]);
     setProgress(0);
     setIsSuccess(true);
     setFocus([]);
@@ -255,7 +253,7 @@ function App() {
         </Stack>
 
         <Grid container justifyContent="center">
-          <Grid item>
+          <Grid>
             <Stack direction="column" spacing={2}>
               {Object.entries(fields)
                 .slice(3, 6)
@@ -275,7 +273,7 @@ function App() {
                 ))}
             </Stack>
           </Grid>
-          <Grid item>
+          <Grid>
             <Stack direction="column" spacing={5} m={5}>
               <Button
                 variant="outlined"
@@ -296,7 +294,7 @@ function App() {
               </Button>
             </Stack>
           </Grid>
-          <Grid item>
+          <Grid>
             <Stack direction="column" spacing={2}>
               {Object.entries(fields)
                 .slice(6, 9)
@@ -341,23 +339,26 @@ function App() {
           <Button color="error" variant="contained" onClick={resetFields}>
             Reset
           </Button>
-          {words.length === 0 ? (
-            <LoadingButton
-              loading={solving}
-              variant="contained"
-              onClick={handleClick}
-            >
-              Solve
-            </LoadingButton>
-          ) : (
-            <LoadingButton
-              loading={solving}
-              variant="contained"
-              onClick={findBest}
-            >
-              Find Best
-            </LoadingButton>
-          )}
+          {
+            // If initial solve is not successful, do not show `Find Best` button
+            words.length === 0 || !isSuccess ? (
+              <LoadingButton
+                loading={solving}
+                variant="contained"
+                onClick={handleClick}
+              >
+                Solve
+              </LoadingButton>
+            ) : (
+              <LoadingButton
+                loading={solving}
+                variant="contained"
+                onClick={findBest}
+              >
+                Find Best
+              </LoadingButton>
+            )
+          }
         </Stack>
         {/* TODO: Make visualize checkbox into button? */}
         <Stack direction="row" spacing={2}>
@@ -385,9 +386,23 @@ function App() {
         </Stack>
 
         <LinearProgressWithLabel value={progress} />
-        {words?.map((word, index) => (
-          <p key={index}>{word}</p>
-        ))}
+
+        <Grid container>
+          <Grid textAlign="center" marginX={2}>
+            {best.length !== 0 && <h3>Initial solution:</h3>}
+            {words && words.map((word, index) => <p key={index}>{word}</p>)}
+          </Grid>
+
+          {best.length !== 0 && (
+            <Grid textAlign="center" marginX={2}>
+              <h3>Best solution:</h3>
+              {best.map((word, index) => (
+                <p key={index}>{word}</p>
+              ))}
+            </Grid>
+          )}
+        </Grid>
+
         {!solving && !isSuccess && (
           <h2>No solution found using up to {LetterSquare.MOST_WORDS} words</h2>
         )}
