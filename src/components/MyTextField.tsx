@@ -1,40 +1,43 @@
+import React, { MutableRefObject } from "react";
 import { TextField } from "@mui/material";
 
 type TextFieldProps = {
-  sx: any;
-  key: string;
-  name: string;
-  ref: (el: HTMLDivElement | null) => HTMLDivElement | null;
+  idx: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  focused: boolean;
   disabled: boolean;
 };
 
-const MyTextField: React.FC<TextFieldProps> = ({
-  sx,
-  key,
-  name,
-  ref,
-  value,
-  onChange,
-  onKeyDown,
-  disabled,
-}) => (
-  <TextField
-    sx={sx}
-    key={key}
-    inputProps={{
-      inputMode: "text",
-      pattern: "[a-zA-Z]+",
-      maxLength: 1,
-    }}
-    name={name}
-    ref={ref}
-    value={value}
-    onChange={onChange}
-    onKeyDown={onKeyDown}
-    disabled={disabled}
-  />
+const inputProps = {
+  inputMode: "text" as "text",
+  pattern: "[a-zA-Z]+",
+  maxLength: 1,
+  style: {
+    textAlign: "center" as "center",
+  },
+  "aria-label": "input",
+};
+const sx = { width: "4em" };
+
+const MyTextField = React.forwardRef<(HTMLDivElement | null)[], TextFieldProps>(
+  ({ idx, value, onChange, onKeyDown, focused, disabled }, ref) => (
+    <TextField
+      sx={sx}
+      inputProps={inputProps}
+      name={idx}
+      ref={(el) =>
+        ((ref as MutableRefObject<(HTMLDivElement | null)[]>).current[
+          parseInt(idx)
+        ] = el)
+      }
+      value={value}
+      onChange={onChange}
+      onKeyDown={onKeyDown}
+      focused={focused}
+      disabled={disabled}
+    />
+  )
 );
 export default MyTextField;
