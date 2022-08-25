@@ -4,7 +4,6 @@ import MyAppBar from "./components/MyAppBar";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Grid from "@mui/material/Unstable_Grid2";
-import TextField from "@mui/material/TextField";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Button from "@mui/material/Button";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -14,6 +13,7 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
+import MyTextField from "./components/MyTextField";
 
 function App() {
   const defaultFields = {
@@ -59,6 +59,7 @@ function App() {
     const value = e.target.value.replace(/[^a-z]/gi, "");
     const name = e.target.name;
     setWords([]);
+    setBest([]);
     setFields({ ...fields, [name]: value.toUpperCase() });
     const nextInput = inputRefs.current[parseInt(name) + 1];
     if (nextInput != null && value !== "") {
@@ -120,7 +121,7 @@ function App() {
     try {
       const input = groupLetters(fields);
       const driver = new LetterSquare(input);
-      if (JSON.stringify(best) === JSON.stringify(words)) {
+      if (best.length !== 0) {
         return;
       }
       console.log(`Looking for the best solution of length ${words.length}...`);
@@ -145,7 +146,7 @@ function App() {
     const keys = [...Array(12).keys()];
     const charSet = new Set<string>();
     // Source: https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
-    const commonChars = "ETAINOSHRDLUCMFYW";
+    const commonChars = "EARIOTNSLCUDPMHGB";
     while (charSet.size < keys.length) {
       charSet.add(
         commonChars.charAt(Math.floor(Math.random() * commonChars.length))
@@ -237,12 +238,10 @@ function App() {
           {Object.entries(fields)
             .slice(0, 3)
             .map(([key, value]) => (
-              <TextField
-                sx={sx}
+              <MyTextField
                 key={key}
-                inputProps={inputProps}
-                name={key}
-                ref={(el) => (inputRefs.current[parseInt(key)] = el)}
+                idx={key}
+                ref={inputRefs}
                 value={value}
                 onChange={handleChange}
                 onKeyDown={handleBackspace}
@@ -258,12 +257,10 @@ function App() {
               {Object.entries(fields)
                 .slice(3, 6)
                 .map(([key, value]) => (
-                  <TextField
-                    sx={sx}
+                  <MyTextField
                     key={key}
-                    inputProps={inputProps}
-                    name={key}
-                    ref={(el) => (inputRefs.current[parseInt(key)] = el)}
+                    idx={key}
+                    ref={inputRefs}
                     value={value}
                     onChange={handleChange}
                     onKeyDown={handleBackspace}
@@ -299,12 +296,10 @@ function App() {
               {Object.entries(fields)
                 .slice(6, 9)
                 .map(([key, value]) => (
-                  <TextField
-                    sx={sx}
+                  <MyTextField
                     key={key}
-                    inputProps={inputProps}
-                    name={key}
-                    ref={(el) => (inputRefs.current[parseInt(key)] = el)}
+                    idx={key}
+                    ref={inputRefs}
                     value={value}
                     onChange={handleChange}
                     onKeyDown={handleBackspace}
@@ -320,12 +315,10 @@ function App() {
           {Object.entries(fields)
             .slice(9)
             .map(([key, value]) => (
-              <TextField
-                sx={sx}
+              <MyTextField
                 key={key}
-                inputProps={inputProps}
-                name={key}
-                ref={(el) => (inputRefs.current[parseInt(key)] = el)}
+                idx={key}
+                ref={inputRefs}
                 value={value}
                 onChange={handleChange}
                 onKeyDown={handleBackspace}
