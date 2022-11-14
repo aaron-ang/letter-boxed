@@ -244,7 +244,7 @@ export default class LetterSquare {
       "No solution found using up to " + LetterSquare.MOST_WORDS + " words."
     );
     // Find the longest in state in the call stack
-    const longest = this.#solvingProcess?.reduce(
+    const longest = this.#solvingProcess.reduce(
       (a, b) => (a.length > b.length ? a : b),
       [] // initialValue
     );
