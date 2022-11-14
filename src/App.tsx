@@ -30,16 +30,6 @@ function App() {
     10: "",
     11: "",
   };
-  const inputProps = {
-    inputMode: "text" as "text",
-    pattern: "[a-zA-Z]+",
-    maxLength: 1,
-    style: {
-      textAlign: "center" as "center",
-    },
-    "aria-label": "input",
-  };
-  const sx = { width: "4em" };
 
   const [fields, setFields] = useState<Record<number, string>>(defaultFields);
   const [disabled, setDisabled] = useState<boolean[]>([]); // To allow changing of TextField state while visualizing
