@@ -14,6 +14,7 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MyTextField from "./components/MyTextField";
+import { createTheme, responsiveFontSizes, ThemeProvider } from "@mui/material";
 
 function App() {
   const defaultFields = {
@@ -32,8 +33,11 @@ function App() {
   };
 
   const [fields, setFields] = useState<Record<number, string>>(defaultFields);
-  const [disabled, setDisabled] = useState<boolean[]>([]); // To allow changing of TextField state while visualizing
-  const [focus, setFocus] = useState<boolean[]>([]); // To allow changing of TextField state while visualizing
+
+  // To allow TextField state to vary while visualizing
+  const [disabledFields, setDisabledFields] = useState<boolean[]>([]);
+  const [focusFields, setFocusFields] = useState<boolean[]>([]);
+
   const [solving, setSolving] = useState(false);
   const [words, setWords] = useState<string[]>([]);
   const [visualize, setVisualize] = useState(false);
@@ -43,13 +47,13 @@ function App() {
   const inputRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [prevInput, setPrevInput] = useState<string[]>([]);
   const [prevProcess, setprevProcess] = useState<string[][]>([]);
-  const [best, setBest] = useState<string[]>([]);
+  const [bestSolution, setBestSolution] = useState<string[]>([]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^a-z]/gi, "");
     const name = e.target.name;
     setWords([]);
-    setBest([]);
+    setBestSolution([]);
     setFields({ ...fields, [name]: value.toUpperCase() });
     const nextInput = inputRefs.current[parseInt(name) + 1];
     if (nextInput != null && value !== "") {
@@ -111,14 +115,14 @@ function App() {
     try {
       const input = groupLetters(fields);
       const driver = new LetterSquare(input);
-      if (best.length !== 0) {
+      if (bestSolution.length !== 0) {
         return;
       }
       console.log(`Looking for the best solution of length ${words.length}...`);
       setSolving(true);
       await new Promise((resolve) => setTimeout(resolve, 500));
-      const bestSolution = await driver.findBest(words.length);
-      setBest(bestSolution);
+      const curBestSolution = await driver.findBest(words.length);
+      setBestSolution(curBestSolution);
     } catch (err) {
       alert(err);
       return;
@@ -129,10 +133,10 @@ function App() {
 
   const generateRandom = () => {
     setWords([]);
-    setBest([]);
+    setBestSolution([]);
     setProgress(0);
     setIsSuccess(true);
-    setFocus([]);
+    setFocusFields([]);
     const keys = [...Array(12).keys()];
     const charSet = new Set<string>();
     // Source: https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
@@ -199,22 +203,29 @@ function App() {
             disabledArr[i] = true;
           }
         });
-        setFocus(focusArr);
-        setDisabled(disabledArr);
+        setFocusFields(focusArr);
+        setDisabledFields(disabledArr);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     } else {
       const solution = progressArr[progressArr.length - 2] ?? [];
       const focusArr: boolean[] = [];
       updateFocus(solution, focusArr);
-      setFocus(focusArr);
+      setFocusFields(focusArr);
       setWords(solution);
     }
-    setDisabled([]);
+    setDisabledFields([]);
   };
 
+  let theme = createTheme({
+    typography: {
+      fontFamily: "Open Sans, sans-serif",
+    },
+  });
+  theme = responsiveFontSizes(theme);
+
   return (
-    <>
+    <ThemeProvider theme={theme}>
       <MyAppBar />
       <Box
         sx={{
@@ -235,8 +246,8 @@ function App() {
                 value={value}
                 onChange={handleChange}
                 onKeyDown={handleBackspace}
-                focused={focus[parseInt(key)]}
-                disabled={disabled[parseInt(key)]}
+                focused={focusFields[parseInt(key)]}
+                disabled={disabledFields[parseInt(key)]}
               />
             ))}
         </Stack>
@@ -254,8 +265,8 @@ function App() {
                     value={value}
                     onChange={handleChange}
                     onKeyDown={handleBackspace}
-                    focused={focus[parseInt(key)]}
-                    disabled={disabled[parseInt(key)]}
+                    focused={focusFields[parseInt(key)]}
+                    disabled={disabledFields[parseInt(key)]}
                   />
                 ))}
             </Stack>
@@ -293,8 +304,8 @@ function App() {
                     value={value}
                     onChange={handleChange}
                     onKeyDown={handleBackspace}
-                    focused={focus[parseInt(key)]}
-                    disabled={disabled[parseInt(key)]}
+                    focused={focusFields[parseInt(key)]}
+                    disabled={disabledFields[parseInt(key)]}
                   />
                 ))}
             </Stack>
@@ -312,8 +323,8 @@ function App() {
                 value={value}
                 onChange={handleChange}
                 onKeyDown={handleBackspace}
-                focused={focus[parseInt(key)]}
-                disabled={disabled[parseInt(key)]}
+                focused={focusFields[parseInt(key)]}
+                disabled={disabledFields[parseInt(key)]}
               />
             ))}
         </Stack>
@@ -372,14 +383,14 @@ function App() {
 
         <Grid container>
           <Grid textAlign="center" marginX={2}>
-            {best.length !== 0 && <h3>Initial solution:</h3>}
+            {bestSolution.length !== 0 && <h3>Initial solution:</h3>}
             {words && words.map((word, index) => <p key={index}>{word}</p>)}
           </Grid>
 
-          {best.length !== 0 && (
+          {bestSolution.length !== 0 && (
             <Grid textAlign="center" marginX={2}>
               <h3>Best solution:</h3>
-              {best.map((word, index) => (
+              {bestSolution.map((word, index) => (
                 <p key={index}>{word}</p>
               ))}
             </Grid>
@@ -390,7 +401,7 @@ function App() {
           <h2>No solution found using up to {LetterSquare.MOST_WORDS} words</h2>
         )}
       </Box>
-    </>
+    </ThemeProvider>
   );
 }
 
