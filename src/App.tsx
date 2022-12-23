@@ -14,6 +14,7 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MyTextField from "./components/MyTextField";
+import { createTheme, responsiveFontSizes, ThemeProvider } from "@mui/material";
 
 function App() {
   const defaultFields = {
@@ -32,10 +33,13 @@ function App() {
   };
 
   const [fields, setFields] = useState<Record<number, string>>(defaultFields);
-  const [disabled, setDisabled] = useState<boolean[]>([]); // To allow changing of TextField state while visualizing
-  const [focus, setFocus] = useState<boolean[]>([]); // To allow changing of TextField state while visualizing
+
+  // To allow TextField state to vary while visualizing
+  const [disabledFields, setDisabledFields] = useState<boolean[]>([]);
+  const [focusFields, setFocusFields] = useState<boolean[]>([]);
+
   const [solving, setSolving] = useState(false);
-  const [words, setWords] = useState<string[]>([]);
+  const [solution, setSolution] = useState<string[]>([]);
   const [visualize, setVisualize] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isSuccess, setIsSuccess] = useState(true);
@@ -43,13 +47,11 @@ function App() {
   const inputRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [prevInput, setPrevInput] = useState<string[]>([]);
   const [prevProcess, setprevProcess] = useState<string[][]>([]);
-  const [best, setBest] = useState<string[]>([]);
+  const [bestSolution, setBestSolution] = useState<string[]>([]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^a-z]/gi, "");
     const name = e.target.name;
-    setWords([]);
-    setBest([]);
     setFields({ ...fields, [name]: value.toUpperCase() });
     const nextInput = inputRefs.current[parseInt(name) + 1];
     if (nextInput != null && value !== "") {
@@ -79,25 +81,28 @@ function App() {
 
   const handleClick = async () => {
     try {
+      setSolution([]);
+      setBestSolution([]);
       const input = groupLetters(fields);
       console.log(`input: ${input}`);
       const driver = new LetterSquare(input);
       setSolving(true);
-      const process =
-        JSON.stringify(input) === JSON.stringify(prevInput)
-          ? prevProcess
-          : // Set timeout to display loading animation
-            (await new Promise((resolve) => setTimeout(resolve, 500)),
-            await driver.solve());
-      console.log(process[process.length - 1]);
+
+      let process: string[][];
+      let success: boolean;
+      if (JSON.stringify(input) === JSON.stringify(prevInput)) {
+        process = prevProcess;
+        success = true;
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const res = await driver.solve();
+        process = res.data;
+        success = res.success;
+      }
 
       await updateBoard(process);
       setprevProcess(process);
-
-      process[process.length - 1][0] === "success"
-        ? setIsSuccess(true)
-        : setIsSuccess(false);
-
+      success ? setIsSuccess(true) : setIsSuccess(false);
       setPrevInput(input);
     } catch (err) {
       alert(err);
@@ -111,14 +116,16 @@ function App() {
     try {
       const input = groupLetters(fields);
       const driver = new LetterSquare(input);
-      if (best.length !== 0) {
+      if (bestSolution.length !== 0) {
         return;
       }
-      console.log(`Looking for the best solution of length ${words.length}...`);
+      console.log(
+        `Looking for the best solution of length ${solution.length}...`
+      );
       setSolving(true);
       await new Promise((resolve) => setTimeout(resolve, 500));
-      const bestSolution = await driver.findBest(words.length);
-      setBest(bestSolution);
+      const curBestSolution = await driver.findBest(solution.length);
+      setBestSolution(curBestSolution);
     } catch (err) {
       alert(err);
       return;
@@ -128,11 +135,11 @@ function App() {
   };
 
   const generateRandom = () => {
-    setWords([]);
-    setBest([]);
+    setSolution([]);
+    setBestSolution([]);
     setProgress(0);
     setIsSuccess(true);
-    setFocus([]);
+    setFocusFields([]);
     const keys = [...Array(12).keys()];
     const charSet = new Set<string>();
     // Source: https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
@@ -187,7 +194,7 @@ function App() {
 
     if (visualize) {
       for (const state of progressArr.slice(0, -1)) {
-        setWords(state);
+        setSolution(state);
         setProgress((prevState) => prevState + (1 / progressArr.length) * 100);
         // If char in textfield is used, make it focused
         const focusArr: boolean[] = Array(12).fill(false);
@@ -199,22 +206,29 @@ function App() {
             disabledArr[i] = true;
           }
         });
-        setFocus(focusArr);
-        setDisabled(disabledArr);
+        setFocusFields(focusArr);
+        setDisabledFields(disabledArr);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     } else {
-      const solution = progressArr[progressArr.length - 2] ?? [];
+      const solution = progressArr[progressArr.length - 1] ?? [];
       const focusArr: boolean[] = [];
       updateFocus(solution, focusArr);
-      setFocus(focusArr);
-      setWords(solution);
+      setFocusFields(focusArr);
+      setSolution(solution);
     }
-    setDisabled([]);
+    setDisabledFields([]);
   };
 
+  let theme = createTheme({
+    typography: {
+      fontFamily: "Open Sans, sans-serif",
+    },
+  });
+  theme = responsiveFontSizes(theme);
+
   return (
-    <>
+    <ThemeProvider theme={theme}>
       <MyAppBar />
       <Box
         sx={{
@@ -233,10 +247,10 @@ function App() {
                 idx={key}
                 ref={inputRefs}
                 value={value}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 onKeyDown={handleBackspace}
-                focused={focus[parseInt(key)]}
-                disabled={disabled[parseInt(key)]}
+                focused={focusFields[parseInt(key)]}
+                disabled={disabledFields[parseInt(key)]}
               />
             ))}
         </Stack>
@@ -252,10 +266,10 @@ function App() {
                     idx={key}
                     ref={inputRefs}
                     value={value}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
                     onKeyDown={handleBackspace}
-                    focused={focus[parseInt(key)]}
-                    disabled={disabled[parseInt(key)]}
+                    focused={focusFields[parseInt(key)]}
+                    disabled={disabledFields[parseInt(key)]}
                   />
                 ))}
             </Stack>
@@ -291,10 +305,10 @@ function App() {
                     idx={key}
                     ref={inputRefs}
                     value={value}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
                     onKeyDown={handleBackspace}
-                    focused={focus[parseInt(key)]}
-                    disabled={disabled[parseInt(key)]}
+                    focused={focusFields[parseInt(key)]}
+                    disabled={disabledFields[parseInt(key)]}
                   />
                 ))}
             </Stack>
@@ -310,10 +324,10 @@ function App() {
                 idx={key}
                 ref={inputRefs}
                 value={value}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 onKeyDown={handleBackspace}
-                focused={focus[parseInt(key)]}
-                disabled={disabled[parseInt(key)]}
+                focused={focusFields[parseInt(key)]}
+                disabled={disabledFields[parseInt(key)]}
               />
             ))}
         </Stack>
@@ -324,13 +338,16 @@ function App() {
           </Button>
           {
             // If initial solve is not successful, do not show `Find Best` button
-            words.length === 0 || !isSuccess ? (
+            solution.length === 0 ||
+            !isSuccess ||
+            visualize ||
+            Object.values(fields).includes("") ? (
               <LoadingButton
                 loading={solving}
                 variant="contained"
                 onClick={handleClick}
               >
-                Solve
+                Run
               </LoadingButton>
             ) : (
               <LoadingButton
@@ -343,7 +360,6 @@ function App() {
             )
           }
         </Stack>
-        {/* TODO: Make visualize checkbox into button? */}
         <Stack direction="row" spacing={2}>
           <FormControlLabel
             disabled={solving}
@@ -372,14 +388,15 @@ function App() {
 
         <Grid container>
           <Grid textAlign="center" marginX={2}>
-            {best.length !== 0 && <h3>Initial solution:</h3>}
-            {words && words.map((word, index) => <p key={index}>{word}</p>)}
+            {bestSolution.length !== 0 && <h3>Initial solution:</h3>}
+            {solution &&
+              solution.map((word, index) => <p key={index}>{word}</p>)}
           </Grid>
 
-          {best.length !== 0 && (
+          {bestSolution.length !== 0 && (
             <Grid textAlign="center" marginX={2}>
               <h3>Best solution:</h3>
-              {best.map((word, index) => (
+              {bestSolution.map((word, index) => (
                 <p key={index}>{word}</p>
               ))}
             </Grid>
@@ -390,7 +407,7 @@ function App() {
           <h2>No solution found using up to {LetterSquare.MOST_WORDS} words</h2>
         )}
       </Box>
-    </>
+    </ThemeProvider>
   );
 }
 
