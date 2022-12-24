@@ -1,0 +1,1 @@
+{"version":3,"file":"static/css/main.2c6c7b2c.css","mappings":"6EAEA,KACE,wBAAyB,CACzB,QACF","sources":["index.css"],"sourcesContent":["@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');\n\nbody {\n  background-color: #fdbcb4;\n  margin: 0;\n}"],"names":[],"sourceRoot":""}
