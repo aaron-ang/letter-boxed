@@ -8,9 +8,8 @@ Check out the visualizer at https://aaron-ang.github.io/letter-boxed
 - Cached previous puzzle and results to remove need for recomputation when switching between visualization toggle option
 
 **Upcoming features**
-- `Find best solution` button replaces `Solve` button after first run; returns the solution with the shortest number of words and total characters
-- Move visualization option from checkbox to its own button
-- Slider that steps through the solving process
+- [x] `Find best solution` button replaces `Solve` button after first run; returns the solution with the shortest number of words and total characters
+- [ ] Slider that steps through the solving process
 
 Demo video
 -
