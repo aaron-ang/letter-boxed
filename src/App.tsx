@@ -90,7 +90,7 @@ function App() {
 
       let process: string[][];
       let success: boolean;
-      if (JSON.stringify(input) === JSON.stringify(prevInput)) {
+      if (input.every((v, i) => v === prevInput[i])) {
         process = prevProcess;
         success = true;
       } else {
@@ -98,6 +98,7 @@ function App() {
         const res = await driver.solve();
         process = res.data;
         success = res.success;
+        console.log(`response: ${success ? "success" : "failure"}`);
       }
 
       await updateBoard(process);
@@ -193,7 +194,7 @@ function App() {
     };
 
     if (visualize) {
-      for (const state of progressArr.slice(0, -1)) {
+      for (const state of progressArr) {
         setSolution(state);
         setProgress((prevState) => prevState + (1 / progressArr.length) * 100);
         // If char in textfield is used, make it focused
@@ -341,7 +342,7 @@ function App() {
             solution.length === 0 ||
             !isSuccess ||
             visualize ||
-            Object.values(fields).includes("") ? (
+            Object.values(fields).join("") !== prevInput.join("") ? (
               <LoadingButton
                 loading={solving}
                 variant="contained"
