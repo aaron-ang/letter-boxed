@@ -1,6 +1,4 @@
 import { useRef, useState } from "react";
-import LetterSquare from "./driver/LetterSquare";
-import MyAppBar from "./components/MyAppBar";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Grid from "@mui/material/Unstable_Grid2";
@@ -8,13 +6,16 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import Button from "@mui/material/Button";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
-import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
-import MyTextField from "./components/MyTextField";
 import { createTheme, responsiveFontSizes, ThemeProvider } from "@mui/material";
+
+import LetterSquare from "./driver/LetterSquare";
+import MyAppBar from "./components/MyAppBar";
+import MyTextField from "./components/MyTextField";
+import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
 
 function App() {
   const defaultFields = {
@@ -79,7 +80,7 @@ function App() {
     setVisualize((prevState) => !prevState);
   };
 
-  const handleClick = async () => {
+  const handleSolve = async () => {
     try {
       setSolution([]);
       setBestSolution([]);
@@ -90,7 +91,7 @@ function App() {
 
       let process: string[][];
       let success: boolean;
-      if (JSON.stringify(input) === JSON.stringify(prevInput)) {
+      if (input.every((v, i) => v === prevInput[i])) {
         process = prevProcess;
         success = true;
       } else {
@@ -98,6 +99,7 @@ function App() {
         const res = await driver.solve();
         process = res.data;
         success = res.success;
+        console.log(`response: ${success ? "success" : "failure"}`);
       }
 
       await updateBoard(process);
@@ -193,7 +195,7 @@ function App() {
     };
 
     if (visualize) {
-      for (const state of progressArr.slice(0, -1)) {
+      for (const state of progressArr) {
         setSolution(state);
         setProgress((prevState) => prevState + (1 / progressArr.length) * 100);
         // If char in textfield is used, make it focused
@@ -230,6 +232,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <MyAppBar />
+
       <Box
         sx={{
           paddingTop: "5em",
@@ -274,6 +277,7 @@ function App() {
                 ))}
             </Stack>
           </Grid>
+
           <Grid>
             <Stack direction="column" spacing={5} m={5}>
               <Button
@@ -295,6 +299,7 @@ function App() {
               </Button>
             </Stack>
           </Grid>
+
           <Grid>
             <Stack direction="column" spacing={2}>
               {Object.entries(fields)
@@ -341,13 +346,13 @@ function App() {
             solution.length === 0 ||
             !isSuccess ||
             visualize ||
-            Object.values(fields).includes("") ? (
+            Object.values(fields).join("") !== prevInput.join("") ? (
               <LoadingButton
                 loading={solving}
                 variant="contained"
-                onClick={handleClick}
+                onClick={handleSolve}
               >
-                Run
+                Solve
               </LoadingButton>
             ) : (
               <LoadingButton
@@ -360,6 +365,7 @@ function App() {
             )
           }
         </Stack>
+
         <Stack direction="row" spacing={2}>
           <FormControlLabel
             disabled={solving}
@@ -368,6 +374,7 @@ function App() {
             }
             label="Visualize"
           />
+
           <FormControl sx={{ minWidth: 80 }} disabled={!visualize || solving}>
             <InputLabel id="delay-label">Delay(ms)</InputLabel>
             <Select
