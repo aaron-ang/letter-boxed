@@ -5,6 +5,11 @@
  */
 import Dictionary from "./Dictionary";
 
+type LetterSquareResponse = {
+  success: boolean;
+  data: string[][];
+};
+
 export default class LetterSquare {
   static MOST_WORDS = 5;
   static WORDS_FILE = `${process.env.PUBLIC_URL}/word_list.txt`;
@@ -24,7 +29,7 @@ export default class LetterSquare {
   #solvingProcess: string[][];
 
   // To find best solution in solveRBVoid
-  #solutions: string[][] = [];
+  #solutions: string[][];
 
   /*
    * Constructor for a puzzle with the specified sides, where each
@@ -51,6 +56,7 @@ export default class LetterSquare {
 
     this.#words = [];
     this.#solvingProcess = [];
+    this.#solutions = [];
     for (let i = 0; i < LetterSquare.MOST_WORDS; i++) {
       this.#words[i] = "";
     }
@@ -185,6 +191,7 @@ export default class LetterSquare {
     ) {
       return true;
     }
+
     // Second base case: wordNum is too big, given the value of maxWords
     if (wordNum >= maxWords) {
       return false;
@@ -227,15 +234,14 @@ export default class LetterSquare {
    * Serves as a wrapper method for solveRB(), which it repeatedly calls
    * with a gradually increasing limit for the number of words in the solution.
    */
-  async solve(): Promise<string[][]> {
+  async solve(): Promise<LetterSquareResponse> {
     let maxWords = 1;
 
     while (maxWords <= LetterSquare.MOST_WORDS) {
       console.log("Looking for a solution of length " + maxWords + "...");
       if (this.#solveRB(0, 0, maxWords)) {
         this.#solvingProcess.push(this.#words.filter((word) => word !== ""));
-        this.#solvingProcess.push(["success"]);
-        return this.#solvingProcess;
+        return { success: true, data: this.#solvingProcess };
       }
       maxWords++;
     }
@@ -249,8 +255,7 @@ export default class LetterSquare {
       [] // initialValue
     );
     this.#solvingProcess.push(longest);
-    this.#solvingProcess.push(["fail"]);
-    return this.#solvingProcess;
+    return { success: false, data: this.#solvingProcess };
   }
 
   /*
@@ -272,6 +277,7 @@ export default class LetterSquare {
       this.#solutions.push(this.#words.filter((word) => word !== ""));
       return;
     }
+
     // Second base case: wordNum is too big, given the value of maxWords
     if (wordNum >= maxWords) {
       return;
