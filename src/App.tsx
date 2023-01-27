@@ -91,6 +91,8 @@ function App() {
 
       let process: string[][];
       let success: boolean;
+
+      // check cache
       if (input.every((v, i) => v === prevInput[i])) {
         process = prevProcess;
         success = true;
@@ -104,11 +106,10 @@ function App() {
 
       await updateBoard(process);
       setprevProcess(process);
-      success ? setIsSuccess(true) : setIsSuccess(false);
+      setIsSuccess(success);
       setPrevInput(input);
     } catch (err) {
       alert(err);
-      return;
     } finally {
       setSolving(false);
     }
@@ -118,19 +119,17 @@ function App() {
     try {
       const input = groupLetters(fields);
       const driver = new LetterSquare(input);
-      if (bestSolution.length !== 0) {
-        return;
+      if (bestSolution.length == 0) {
+        console.log(
+          `Looking for the best solution of length ${solution.length}...`
+        );
+        setSolving(true);
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const curBestSolution = await driver.findBest(solution.length);
+        setBestSolution(curBestSolution);
       }
-      console.log(
-        `Looking for the best solution of length ${solution.length}...`
-      );
-      setSolving(true);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      const curBestSolution = await driver.findBest(solution.length);
-      setBestSolution(curBestSolution);
     } catch (err) {
       alert(err);
-      return;
     } finally {
       setSolving(false);
     }
@@ -180,38 +179,9 @@ function App() {
 
   const updateBoard = async (progressArr: string[][]) => {
     setProgress(0);
-    const fieldsArr = Object.values(fields); // Get current characters in fields state
-
-    const updateFocus = (stateArr: string[], focusArr: boolean[]) => {
-      stateArr?.forEach((word) => {
-        const charArray = [...word];
-        charArray.forEach((c) => {
-          const index = fieldsArr.indexOf(c);
-          if (index !== -1) {
-            focusArr[index] = true;
-          }
-        });
-      });
-    };
 
     if (visualize) {
-      for (const state of progressArr) {
-        setSolution(state);
-        setProgress((prevState) => prevState + (1 / progressArr.length) * 100);
-        // If char in textfield is used, make it focused
-        const focusArr: boolean[] = Array(12).fill(false);
-        updateFocus(state, focusArr);
-        // If textfield is not focused, make it disabled
-        const disabledArr: boolean[] = [];
-        focusArr.forEach((val, i) => {
-          if (!val) {
-            disabledArr[i] = true;
-          }
-        });
-        setFocusFields(focusArr);
-        setDisabledFields(disabledArr);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
+      processVisualization(progressArr);
     } else {
       const solution = progressArr[progressArr.length - 1] ?? [];
       const focusArr: boolean[] = [];
@@ -220,6 +190,39 @@ function App() {
       setSolution(solution);
     }
     setDisabledFields([]);
+  };
+
+  const processVisualization = async (progressArr: string[][]) => {
+    for (const state of progressArr) {
+      setSolution(state);
+      setProgress((prevState) => prevState + (1 / progressArr.length) * 100);
+      // If char in textfield is used, make it focused
+      const focusArr: boolean[] = Array(12).fill(false);
+      updateFocus(state, focusArr);
+      // If textfield is not focused, make it disabled
+      const disabledArr: boolean[] = [];
+      focusArr.forEach((val, i) => {
+        if (!val) {
+          disabledArr[i] = true;
+        }
+      });
+      setFocusFields(focusArr);
+      setDisabledFields(disabledArr);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  };
+
+  const updateFocus = (stateArr: string[], focusArr: boolean[]) => {
+    const fieldsArr = Object.values(fields); // Get current characters in fields state
+    stateArr?.forEach((word) => {
+      const charArray = [...word];
+      charArray.forEach((c) => {
+        const index = fieldsArr.indexOf(c);
+        if (index !== -1) {
+          focusArr[index] = true;
+        }
+      });
+    });
   };
 
   let theme = createTheme({
