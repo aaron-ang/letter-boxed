@@ -181,7 +181,7 @@ function App() {
     setProgress(0);
 
     if (visualize) {
-      processVisualization(progressArr);
+      await processVisualization(progressArr);
     } else {
       const solution = progressArr[progressArr.length - 1] ?? [];
       const focusArr: boolean[] = [];
