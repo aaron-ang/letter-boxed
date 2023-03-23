@@ -8,9 +8,11 @@ Check out the visualizer at https://aaron-ang.github.io/letter-boxed
 - Cached previous puzzle and results to remove need for recomputation when switching between visualization toggle option
 
 **Upcoming features**
-- `Find best solution` button replaces `Solve` button after first run; returns the solution with the shortest number of words and total characters
-- Move visualization option from checkbox to its own button
-- Slider that steps through the solving process
+- [x] `Find best solution` button replaces `Solve` button after first run; returns the solution with the shortest number of words and total characters
+- [ ] Slider that steps through the solving process
+
+**Current challenges**
+- The puzzle is solved entirely on the client side which may cause the page to become unresponsive for large puzzles. Decoupling the application could solve this issue. However, since the frontend needs the entire solving process for the visualization feature, transferring large amounts of data between a backend might be challenging.
 
 Demo video
 -

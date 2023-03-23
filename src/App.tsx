@@ -1,6 +1,4 @@
 import { useRef, useState } from "react";
-import LetterSquare from "./driver/LetterSquare";
-import MyAppBar from "./components/MyAppBar";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Grid from "@mui/material/Unstable_Grid2";
@@ -8,12 +6,16 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import Button from "@mui/material/Button";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
-import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
+import { createTheme, responsiveFontSizes, ThemeProvider } from "@mui/material";
+
+import LetterSquare from "./driver/LetterSquare";
+import MyAppBar from "./components/MyAppBar";
 import MyTextField from "./components/MyTextField";
+import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
 
 function App() {
   const defaultFields = {
@@ -32,10 +34,13 @@ function App() {
   };
 
   const [fields, setFields] = useState<Record<number, string>>(defaultFields);
-  const [disabled, setDisabled] = useState<boolean[]>([]); // To allow changing of TextField state while visualizing
-  const [focus, setFocus] = useState<boolean[]>([]); // To allow changing of TextField state while visualizing
+
+  // To allow TextField state to vary while visualizing
+  const [disabledFields, setDisabledFields] = useState<boolean[]>([]);
+  const [focusFields, setFocusFields] = useState<boolean[]>([]);
+
   const [solving, setSolving] = useState(false);
-  const [words, setWords] = useState<string[]>([]);
+  const [solution, setSolution] = useState<string[]>([]);
   const [visualize, setVisualize] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isSuccess, setIsSuccess] = useState(true);
@@ -43,13 +48,11 @@ function App() {
   const inputRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [prevInput, setPrevInput] = useState<string[]>([]);
   const [prevProcess, setprevProcess] = useState<string[][]>([]);
-  const [best, setBest] = useState<string[]>([]);
+  const [bestSolution, setBestSolution] = useState<string[]>([]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^a-z]/gi, "");
     const name = e.target.name;
-    setWords([]);
-    setBest([]);
     setFields({ ...fields, [name]: value.toUpperCase() });
     const nextInput = inputRefs.current[parseInt(name) + 1];
     if (nextInput != null && value !== "") {
@@ -77,31 +80,36 @@ function App() {
     setVisualize((prevState) => !prevState);
   };
 
-  const handleClick = async () => {
+  const handleSolve = async () => {
     try {
+      setSolution([]);
+      setBestSolution([]);
       const input = groupLetters(fields);
       console.log(`input: ${input}`);
       const driver = new LetterSquare(input);
       setSolving(true);
-      const process =
-        JSON.stringify(input) === JSON.stringify(prevInput)
-          ? prevProcess
-          : // Set timeout to display loading animation
-            (await new Promise((resolve) => setTimeout(resolve, 500)),
-            await driver.solve());
-      console.log(process[process.length - 1]);
+
+      let process: string[][];
+      let success: boolean;
+
+      // check cache
+      if (input.every((v, i) => v === prevInput[i])) {
+        process = prevProcess;
+        success = true;
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const res = await driver.solve();
+        process = res.data;
+        success = res.success;
+        console.log(`response: ${success ? "success" : "failure"}`);
+      }
 
       await updateBoard(process);
       setprevProcess(process);
-
-      process[process.length - 1][0] === "success"
-        ? setIsSuccess(true)
-        : setIsSuccess(false);
-
+      setIsSuccess(success);
       setPrevInput(input);
     } catch (err) {
       alert(err);
-      return;
     } finally {
       setSolving(false);
     }
@@ -111,28 +119,28 @@ function App() {
     try {
       const input = groupLetters(fields);
       const driver = new LetterSquare(input);
-      if (best.length !== 0) {
-        return;
+      if (bestSolution.length == 0) {
+        console.log(
+          `Looking for the best solution of length ${solution.length}...`
+        );
+        setSolving(true);
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const curBestSolution = await driver.findBest(solution.length);
+        setBestSolution(curBestSolution);
       }
-      console.log(`Looking for the best solution of length ${words.length}...`);
-      setSolving(true);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      const bestSolution = await driver.findBest(words.length);
-      setBest(bestSolution);
     } catch (err) {
       alert(err);
-      return;
     } finally {
       setSolving(false);
     }
   };
 
   const generateRandom = () => {
-    setWords([]);
-    setBest([]);
+    setSolution([]);
+    setBestSolution([]);
     setProgress(0);
     setIsSuccess(true);
-    setFocus([]);
+    setFocusFields([]);
     const keys = [...Array(12).keys()];
     const charSet = new Set<string>();
     // Source: https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
@@ -171,51 +179,63 @@ function App() {
 
   const updateBoard = async (progressArr: string[][]) => {
     setProgress(0);
-    const fieldsArr = Object.values(fields); // Get current characters in fields state
-
-    const updateFocus = (stateArr: string[], focusArr: boolean[]) => {
-      stateArr?.forEach((word) => {
-        const charArray = [...word];
-        charArray.forEach((c) => {
-          const index = fieldsArr.indexOf(c);
-          if (index !== -1) {
-            focusArr[index] = true;
-          }
-        });
-      });
-    };
 
     if (visualize) {
-      for (const state of progressArr.slice(0, -1)) {
-        setWords(state);
-        setProgress((prevState) => prevState + (1 / progressArr.length) * 100);
-        // If char in textfield is used, make it focused
-        const focusArr: boolean[] = Array(12).fill(false);
-        updateFocus(state, focusArr);
-        // If textfield is not focused, make it disabled
-        const disabledArr: boolean[] = [];
-        focusArr.forEach((val, i) => {
-          if (!val) {
-            disabledArr[i] = true;
-          }
-        });
-        setFocus(focusArr);
-        setDisabled(disabledArr);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
+      await processVisualization(progressArr);
     } else {
-      const solution = progressArr[progressArr.length - 2] ?? [];
+      const solution = progressArr[progressArr.length - 1] ?? [];
       const focusArr: boolean[] = [];
       updateFocus(solution, focusArr);
-      setFocus(focusArr);
-      setWords(solution);
+      setFocusFields(focusArr);
+      setSolution(solution);
     }
-    setDisabled([]);
+    setDisabledFields([]);
   };
 
+  const processVisualization = async (progressArr: string[][]) => {
+    for (const state of progressArr) {
+      setSolution(state);
+      setProgress((prevState) => prevState + (1 / progressArr.length) * 100);
+      // If char in textfield is used, make it focused
+      const focusArr: boolean[] = Array(12).fill(false);
+      updateFocus(state, focusArr);
+      // If textfield is not focused, make it disabled
+      const disabledArr: boolean[] = [];
+      focusArr.forEach((val, i) => {
+        if (!val) {
+          disabledArr[i] = true;
+        }
+      });
+      setFocusFields(focusArr);
+      setDisabledFields(disabledArr);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  };
+
+  const updateFocus = (stateArr: string[], focusArr: boolean[]) => {
+    const fieldsArr = Object.values(fields); // Get current characters in fields state
+    stateArr?.forEach((word) => {
+      const charArray = [...word];
+      charArray.forEach((c) => {
+        const index = fieldsArr.indexOf(c);
+        if (index !== -1) {
+          focusArr[index] = true;
+        }
+      });
+    });
+  };
+
+  let theme = createTheme({
+    typography: {
+      fontFamily: "Open Sans, sans-serif",
+    },
+  });
+  theme = responsiveFontSizes(theme);
+
   return (
-    <>
+    <ThemeProvider theme={theme}>
       <MyAppBar />
+
       <Box
         sx={{
           paddingTop: "5em",
@@ -233,10 +253,10 @@ function App() {
                 idx={key}
                 ref={inputRefs}
                 value={value}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 onKeyDown={handleBackspace}
-                focused={focus[parseInt(key)]}
-                disabled={disabled[parseInt(key)]}
+                focused={focusFields[parseInt(key)]}
+                disabled={disabledFields[parseInt(key)]}
               />
             ))}
         </Stack>
@@ -252,14 +272,15 @@ function App() {
                     idx={key}
                     ref={inputRefs}
                     value={value}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
                     onKeyDown={handleBackspace}
-                    focused={focus[parseInt(key)]}
-                    disabled={disabled[parseInt(key)]}
+                    focused={focusFields[parseInt(key)]}
+                    disabled={disabledFields[parseInt(key)]}
                   />
                 ))}
             </Stack>
           </Grid>
+
           <Grid>
             <Stack direction="column" spacing={5} m={5}>
               <Button
@@ -281,6 +302,7 @@ function App() {
               </Button>
             </Stack>
           </Grid>
+
           <Grid>
             <Stack direction="column" spacing={2}>
               {Object.entries(fields)
@@ -291,10 +313,10 @@ function App() {
                     idx={key}
                     ref={inputRefs}
                     value={value}
-                    onChange={handleChange}
+                    onChange={handleInputChange}
                     onKeyDown={handleBackspace}
-                    focused={focus[parseInt(key)]}
-                    disabled={disabled[parseInt(key)]}
+                    focused={focusFields[parseInt(key)]}
+                    disabled={disabledFields[parseInt(key)]}
                   />
                 ))}
             </Stack>
@@ -310,10 +332,10 @@ function App() {
                 idx={key}
                 ref={inputRefs}
                 value={value}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 onKeyDown={handleBackspace}
-                focused={focus[parseInt(key)]}
-                disabled={disabled[parseInt(key)]}
+                focused={focusFields[parseInt(key)]}
+                disabled={disabledFields[parseInt(key)]}
               />
             ))}
         </Stack>
@@ -324,11 +346,14 @@ function App() {
           </Button>
           {
             // If initial solve is not successful, do not show `Find Best` button
-            words.length === 0 || !isSuccess ? (
+            solution.length === 0 ||
+            !isSuccess ||
+            visualize ||
+            Object.values(fields).join("") !== prevInput.join("") ? (
               <LoadingButton
                 loading={solving}
                 variant="contained"
-                onClick={handleClick}
+                onClick={handleSolve}
               >
                 Solve
               </LoadingButton>
@@ -343,7 +368,7 @@ function App() {
             )
           }
         </Stack>
-        {/* TODO: Make visualize checkbox into button? */}
+
         <Stack direction="row" spacing={2}>
           <FormControlLabel
             disabled={solving}
@@ -352,6 +377,7 @@ function App() {
             }
             label="Visualize"
           />
+
           <FormControl sx={{ minWidth: 80 }} disabled={!visualize || solving}>
             <InputLabel id="delay-label">Delay(ms)</InputLabel>
             <Select
@@ -372,14 +398,15 @@ function App() {
 
         <Grid container>
           <Grid textAlign="center" marginX={2}>
-            {best.length !== 0 && <h3>Initial solution:</h3>}
-            {words && words.map((word, index) => <p key={index}>{word}</p>)}
+            {bestSolution.length !== 0 && <h3>Initial solution:</h3>}
+            {solution &&
+              solution.map((word, index) => <p key={index}>{word}</p>)}
           </Grid>
 
-          {best.length !== 0 && (
+          {bestSolution.length !== 0 && (
             <Grid textAlign="center" marginX={2}>
               <h3>Best solution:</h3>
-              {best.map((word, index) => (
+              {bestSolution.map((word, index) => (
                 <p key={index}>{word}</p>
               ))}
             </Grid>
@@ -390,7 +417,7 @@ function App() {
           <h2>No solution found using up to {LetterSquare.MOST_WORDS} words</h2>
         )}
       </Box>
-    </>
+    </ThemeProvider>
   );
 }
 
