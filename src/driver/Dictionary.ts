@@ -5,6 +5,7 @@
  * prefixes: "p", "pu", "puz", "puzz", and "puzzl".
  *
  */
+
 export default class Dictionary {
   #contents: Map<string, boolean>;
 
@@ -42,7 +43,7 @@ export default class Dictionary {
    * or a prefix of a word in the Dictionary, and false otherwise
    */
   hasString(s: string): boolean {
-    if (s == null || s === "") {
+    if (s === null || s === "") {
       return false;
     }
     return this.#contents.has(s.toLowerCase());
@@ -54,7 +55,7 @@ export default class Dictionary {
    * and false otherwise
    */
   hasFullWord(s: string): boolean {
-    if (s == null || s === "") {
+    if (s === null || s === "") {
       return false;
     }
     s = s.toLowerCase();
