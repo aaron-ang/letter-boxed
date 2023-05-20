@@ -3,6 +3,7 @@
  * and solves it using recursive backtracking.
  *
  */
+
 import Dictionary from "./Dictionary";
 
 type LetterSquareResponse = {
@@ -36,7 +37,7 @@ export default class LetterSquare {
    * side is a string containing the 3 letters from one side of the square.
    */
   constructor(sides: string[]) {
-    if (sides == null || sides.length !== 4) {
+    if (sides === null || sides.length !== 4) {
       throw new Error("parameter must be an array of 4 strings");
     }
 
@@ -44,7 +45,7 @@ export default class LetterSquare {
     this.#letters = new Array(12);
     let letterNum = 0;
     for (let i = 0; i < sides.length; i++) {
-      if (sides[i] == null || sides[i].length !== 3) {
+      if (sides[i] === null || sides[i].length !== 3) {
         throw new Error("invalid side string: " + sides[i]);
       }
 

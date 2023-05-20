@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import axios from "axios";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Grid from "@mui/material/Unstable_Grid2";
@@ -18,6 +19,7 @@ import MyTextField from "./components/MyTextField";
 import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
 
 function App() {
+  const CLOUD_FUNCTION_URL = process.env.REACT_APP_CLOUD_FUNCTION_URL;
   const defaultFields = {
     0: "",
     1: "",
@@ -80,13 +82,24 @@ function App() {
     setVisualize((prevState) => !prevState);
   };
 
+  const getProcess = async (input: string[], length?: number) => {
+    const res = await axios.get(CLOUD_FUNCTION_URL!, {
+      params: { input, length },
+    });
+    const { status, data } = res;
+    if (status !== 200) {
+      return { success: false, process: [] };
+    } else {
+      return { success: true, process: data };
+    }
+  };
+
   const handleSolve = async () => {
     try {
       setSolution([]);
       setBestSolution([]);
       const input = groupLetters(fields);
       console.log(`input: ${input}`);
-      const driver = new LetterSquare(input);
       setSolving(true);
 
       let process: string[][];
@@ -98,8 +111,8 @@ function App() {
         success = true;
       } else {
         await new Promise((resolve) => setTimeout(resolve, 500));
-        const res = await driver.solve();
-        process = res.data;
+        const res = await getProcess(input);
+        process = res.process;
         success = res.success;
         console.log(`response: ${success ? "success" : "failure"}`);
       }
@@ -109,7 +122,11 @@ function App() {
       setIsSuccess(success);
       setPrevInput(input);
     } catch (err) {
-      alert(err);
+      if (axios.isAxiosError(err) && err.response?.status === 504) {
+        alert("Request timed out. Please try again.");
+      } else {
+        alert(err);
+      }
     } finally {
       setSolving(false);
     }
@@ -118,15 +135,14 @@ function App() {
   const findBest = async () => {
     try {
       const input = groupLetters(fields);
-      const driver = new LetterSquare(input);
-      if (bestSolution.length == 0) {
+      if (bestSolution.length === 0) {
         console.log(
           `Looking for the best solution of length ${solution.length}...`
         );
         setSolving(true);
         await new Promise((resolve) => setTimeout(resolve, 500));
-        const curBestSolution = await driver.findBest(solution.length);
-        setBestSolution(curBestSolution);
+        const res = await getProcess(input, solution.length);
+        setBestSolution(res.process);
       }
     } catch (err) {
       alert(err);
