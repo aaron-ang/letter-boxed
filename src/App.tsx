@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import axios from "axios";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
@@ -94,6 +94,10 @@ function App() {
     }
   };
 
+  const sleep = (ms: number) => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  };
+
   const handleSolve = async () => {
     try {
       setSolution([]);
@@ -110,7 +114,6 @@ function App() {
         process = prevProcess;
         success = true;
       } else {
-        await new Promise((resolve) => setTimeout(resolve, 500));
         const res = await getProcess(input);
         process = res.process;
         success = res.success;
@@ -140,7 +143,6 @@ function App() {
           `Looking for the best solution of length ${solution.length}...`
         );
         setSolving(true);
-        await new Promise((resolve) => setTimeout(resolve, 500));
         const res = await getProcess(input, solution.length);
         setBestSolution(res.process);
       }
@@ -224,7 +226,7 @@ function App() {
       });
       setFocusFields(focusArr);
       setDisabledFields(disabledArr);
-      await new Promise((resolve) => setTimeout(resolve, delay));
+      await sleep(delay);
     }
   };
 

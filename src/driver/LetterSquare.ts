@@ -235,7 +235,7 @@ export default class LetterSquare {
    * Serves as a wrapper method for solveRB(), which it repeatedly calls
    * with a gradually increasing limit for the number of words in the solution.
    */
-  async solve(): Promise<LetterSquareResponse> {
+  solve(): LetterSquareResponse {
     let maxWords = 1;
 
     while (maxWords <= LetterSquare.MOST_WORDS) {
@@ -329,7 +329,7 @@ export default class LetterSquare {
    * All solutions will have at most `numWords` words.
    * After exhausting all possible solutions, returns the best solution found.
    */
-  async findBest(numWords: number): Promise<string[]> {
+  findBest(numWords: number): string[] {
     const solveStart = Date.now();
     this.#solveRBVoid(0, 0, numWords);
     const sortStart = Date.now();

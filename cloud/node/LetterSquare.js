@@ -3,15 +3,6 @@
  * and solves it using recursive backtracking.
  *
  */
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
@@ -89,23 +80,21 @@ class LetterSquare {
      * with a gradually increasing limit for the number of words in the solution.
      */
     solve() {
-        return __awaiter(this, void 0, void 0, function* () {
-            let maxWords = 1;
-            while (maxWords <= LetterSquare.MOST_WORDS) {
-                console.log("Looking for a solution of length " + maxWords + "...");
-                if (__classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_solveRB).call(this, 0, 0, maxWords)) {
-                    __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f").push(__classPrivateFieldGet(this, _LetterSquare_words, "f").filter((word) => word !== ""));
-                    return { success: true, data: __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f") };
-                }
-                maxWords++;
+        let maxWords = 1;
+        while (maxWords <= LetterSquare.MOST_WORDS) {
+            console.log("Looking for a solution of length " + maxWords + "...");
+            if (__classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_solveRB).call(this, 0, 0, maxWords)) {
+                __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f").push(__classPrivateFieldGet(this, _LetterSquare_words, "f").filter((word) => word !== ""));
+                return { success: true, data: __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f") };
             }
-            console.log("No solution found using up to " + LetterSquare.MOST_WORDS + " words.");
-            // Find the longest in state in the call stack
-            const longest = __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f").reduce((a, b) => (a.length > b.length ? a : b), [] // initialValue
-            );
-            __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f").push(longest);
-            return { success: false, data: __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f") };
-        });
+            maxWords++;
+        }
+        console.log("No solution found using up to " + LetterSquare.MOST_WORDS + " words.");
+        // Find the longest in state in the call stack
+        const longest = __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f").reduce((a, b) => (a.length > b.length ? a : b), [] // initialValue
+        );
+        __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f").push(longest);
+        return { success: false, data: __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f") };
     }
     /*
      * compareSolution - compare function to sort the solutions.
@@ -122,15 +111,13 @@ class LetterSquare {
      * After exhausting all possible solutions, returns the best solution found.
      */
     findBest(numWords) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const solveStart = Date.now();
-            __classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_solveRBVoid).call(this, 0, 0, numWords);
-            const sortStart = Date.now();
-            console.log(`It took ${(sortStart - solveStart) / 1000}s to get all solutions.`);
-            __classPrivateFieldGet(this, _LetterSquare_solutions, "f").sort(this.compareSolution);
-            console.log(`Sorting took ${Date.now() - sortStart}ms`);
-            return __classPrivateFieldGet(this, _LetterSquare_solutions, "f").length === 0 ? [] : __classPrivateFieldGet(this, _LetterSquare_solutions, "f")[0];
-        });
+        const solveStart = Date.now();
+        __classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_solveRBVoid).call(this, 0, 0, numWords);
+        const sortStart = Date.now();
+        console.log(`It took ${(sortStart - solveStart) / 1000}s to get all solutions.`);
+        __classPrivateFieldGet(this, _LetterSquare_solutions, "f").sort(this.compareSolution);
+        console.log(`Sorting took ${Date.now() - sortStart}ms`);
+        return __classPrivateFieldGet(this, _LetterSquare_solutions, "f").length === 0 ? [] : __classPrivateFieldGet(this, _LetterSquare_solutions, "f")[0];
     }
 }
 _LetterSquare_sides = new WeakMap(), _LetterSquare_letters = new WeakMap(), _LetterSquare_words = new WeakMap(), _LetterSquare_solvingProcess = new WeakMap(), _LetterSquare_solutions = new WeakMap(), _LetterSquare_instances = new WeakSet(), _LetterSquare_addLetter = function _LetterSquare_addLetter(letter, wordNum) {

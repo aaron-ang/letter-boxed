@@ -1,7 +1,7 @@
 import functions from "@google-cloud/functions-framework";
 import LetterSquare from "./LetterSquare.js";
 
-functions.http("solve", async (req, res) => {
+functions.http("solve", (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Methods", "GET");
 
@@ -12,10 +12,10 @@ functions.http("solve", async (req, res) => {
 
   const driver = new LetterSquare(input);
   if (length) {
-    const result = await driver.findBest(+length);
+    const result = driver.findBest(+length);
     res.send(result);
   } else {
-    const result = await driver.solve();
+    const result = driver.solve();
     result.success ? res.send(result.data) : res.sendStatus(500);
   }
 });
