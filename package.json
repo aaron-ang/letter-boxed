@@ -1,10 +1,9 @@
 {
   "name": "letter-square",
   "homepage": "https://aaron-ang.github.io/letter-boxed",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@google-cloud/functions-framework": "^3.2.0",
     "@mui/icons-material": "^5.11.16",
     "@mui/lab": "^5.0.0-alpha.130",
     "@mui/material": "^5.13.1",
