@@ -7,7 +7,7 @@ functions.http("solve", (req, res) => {
 
   const { input, length } = req.query;
   if (!input || !Array.isArray(input)) {
-    res.status(400).send("Invalid input");
+    return res.status(400).send("Invalid input");
   }
 
   const driver = new LetterSquare(input);
