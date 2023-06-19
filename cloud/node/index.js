@@ -1,7 +1,7 @@
 import functions from "@google-cloud/functions-framework";
 import LetterSquare from "./LetterSquare.js";
 
-functions.http("solve", (req, res) => {
+functions.http("solveHttp", (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
   res.set("Access-Control-Allow-Methods", "GET");
 
@@ -12,10 +12,11 @@ functions.http("solve", (req, res) => {
 
   const driver = new LetterSquare(input);
   if (length) {
-    const result = driver.findBest(+length);
-    res.send(result);
+    if (isNaN(+length)) {
+      return res.status(400).send("Invalid length");
+    }
+    res.send(driver.findBest(+length));
   } else {
-    const result = driver.solve();
-    result.success ? res.send(result.data) : res.sendStatus(500);
+    res.send(driver.solve());
   }
 });

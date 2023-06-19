@@ -13,44 +13,35 @@ import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import { createTheme, responsiveFontSizes, ThemeProvider } from "@mui/material";
 
-import LetterSquare from "./driver/LetterSquare";
+import LetterSquare, { LetterSquareResponse } from "./driver/LetterSquare";
 import MyAppBar from "./components/MyAppBar";
 import MyTextField from "./components/MyTextField";
 import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
 
 function App() {
-  const CLOUD_FUNCTION_URL = process.env.REACT_APP_CLOUD_FUNCTION_URL;
-  const defaultFields = {
-    0: "",
-    1: "",
-    2: "",
-    3: "",
-    4: "",
-    5: "",
-    6: "",
-    7: "",
-    8: "",
-    9: "",
-    10: "",
-    11: "",
-  };
+  const CLOUD_FUNCTION_URL =
+    process.env.REACT_APP_CLOUD_FUNCTION_URL_PROD ||
+    process.env.REACT_APP_CLOUD_FUNCTION_URL_DEV;
 
-  const [fields, setFields] = useState<Record<number, string>>(defaultFields);
+  const defaultFields = {};
+  [...Array(12).keys()].forEach((key) => (defaultFields[key] = ""));
+
+  const [fields, setFields] = useState<Record<number, string>>(defaultFields),
+    [solving, setSolving] = useState(false),
+    [solution, setSolution] = useState<string[]>([]),
+    [visualize, setVisualize] = useState(false),
+    [progress, setProgress] = useState(0),
+    [isSuccess, setIsSuccess] = useState(true),
+    [delay, setDelay] = useState(5),
+    [prevInput, setPrevInput] = useState<string[]>([]),
+    [prevProcess, setprevProcess] = useState<string[][]>([]),
+    [bestSolution, setBestSolution] = useState<string[]>([]);
 
   // To allow TextField state to vary while visualizing
-  const [disabledFields, setDisabledFields] = useState<boolean[]>([]);
-  const [focusFields, setFocusFields] = useState<boolean[]>([]);
+  const [disabledFields, setDisabledFields] = useState<boolean[]>([]),
+    [focusFields, setFocusFields] = useState<boolean[]>([]);
 
-  const [solving, setSolving] = useState(false);
-  const [solution, setSolution] = useState<string[]>([]);
-  const [visualize, setVisualize] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [isSuccess, setIsSuccess] = useState(true);
-  const [delay, setDelay] = useState(5);
   const inputRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const [prevInput, setPrevInput] = useState<string[]>([]);
-  const [prevProcess, setprevProcess] = useState<string[][]>([]);
-  const [bestSolution, setBestSolution] = useState<string[]>([]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^a-z]/gi, "");
@@ -86,12 +77,12 @@ function App() {
     const res = await axios.get(CLOUD_FUNCTION_URL!, {
       params: { input, length },
     });
-    const { status, data } = res;
-    if (status !== 200) {
-      return { success: false, process: [] };
-    } else {
-      return { success: true, process: data };
-    }
+    const { data }: { data: LetterSquareResponse } = res;
+    console.log(data);
+    return {
+      success: data.success,
+      process: data.data,
+    };
   };
 
   const sleep = (ms: number) => {
@@ -106,8 +97,7 @@ function App() {
       console.log(`input: ${input}`);
       setSolving(true);
 
-      let process: string[][];
-      let success: boolean;
+      let process: string[][], success: boolean;
 
       // check cache
       if (input.every((v, i) => v === prevInput[i])) {
@@ -115,7 +105,7 @@ function App() {
         success = true;
       } else {
         const res = await getProcess(input);
-        process = res.process;
+        process = res.process as string[][];
         success = res.success;
         console.log(`response: ${success ? "success" : "failure"}`);
       }
@@ -125,10 +115,14 @@ function App() {
       setIsSuccess(success);
       setPrevInput(input);
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 504) {
-        alert("Request timed out. Please try again.");
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 504) {
+          alert("Request timed out. Please try again.");
+        } else {
+          alert(err.message);
+        }
       } else {
-        alert(err);
+        console.log(err);
       }
     } finally {
       setSolving(false);
@@ -144,7 +138,7 @@ function App() {
         );
         setSolving(true);
         const res = await getProcess(input, solution.length);
-        setBestSolution(res.process);
+        setBestSolution(res.process as string[]);
       }
     } catch (err) {
       alert(err);
@@ -159,10 +153,11 @@ function App() {
     setProgress(0);
     setIsSuccess(true);
     setFocusFields([]);
-    const keys = [...Array(12).keys()];
-    const charSet = new Set<string>();
-    // Source: https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
-    const commonChars = "EARIOTNSLCUDPMHGB";
+
+    const keys = [...Array(12).keys()],
+      charSet = new Set<string>(),
+      commonChars = "EARIOTNSLCUDPMHGB"; // Source: https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
+
     while (charSet.size < keys.length) {
       charSet.add(
         commonChars.charAt(Math.floor(Math.random() * commonChars.length))

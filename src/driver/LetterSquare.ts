@@ -6,9 +6,9 @@
 
 import Dictionary from "./Dictionary";
 
-type LetterSquareResponse = {
+export type LetterSquareResponse = {
   success: boolean;
-  data: string[][];
+  data: string[][] | string[];
 };
 
 export default class LetterSquare {
@@ -165,8 +165,8 @@ export default class LetterSquare {
     }
 
     // All other characters
-    const currWord = this.#words[wordNum];
-    const newWord = currWord + letter;
+    const currWord = this.#words[wordNum],
+      newWord = currWord + letter;
     return (
       !this.#onSameSide(letter, LetterSquare.lastLetter(currWord)) &&
       !this.#alreadyUsed(newWord) &&
@@ -199,8 +199,7 @@ export default class LetterSquare {
     }
 
     // Loop through letters
-    for (let i = 0; i < this.#letters.length; i++) {
-      const currLetter = this.#letters[i];
+    for (const currLetter of this.#letters) {
       // Check if valid to add letter
       if (this.#isValid(currLetter, wordNum, charNum)) {
         // Expand current word in solution by adding one letter
@@ -259,15 +258,6 @@ export default class LetterSquare {
     return { success: false, data: this.#solvingProcess };
   }
 
-  /*
-   * solveRB - the key recursive backtracking method.
-   * Handles the process of adding one letter to the word at position
-   * wordNum as part of a solution with at most maxWords words.
-   * Returns true if a solution has been found, and false otherwise.
-   *
-   * Since this is a private helper method, we assume that only
-   * appropriate values will be passed in.
-   */
   #solveRBVoid(wordNum: number, charNum: number, maxWords: number): void {
     // First base case: puzzle solved
     if (
@@ -285,8 +275,7 @@ export default class LetterSquare {
     }
 
     // Loop through letters
-    for (let i = 0; i < this.#letters.length; i++) {
-      const currLetter = this.#letters[i];
+    for (const currLetter of this.#letters) {
       // Check if valid to add letter
       if (this.#isValid(currLetter, wordNum, charNum)) {
         // Expand current word in solution by adding one letter
@@ -299,8 +288,6 @@ export default class LetterSquare {
           currWord.length >= 3 &&
           LetterSquare.dictionary.hasFullWord(currWord)
         ) {
-          // Append state to solvingProcess
-          this.#solvingProcess.push(this.#words.filter((word) => word !== ""));
           this.#solveRBVoid(wordNum + 1, 0, maxWords);
         }
 
@@ -317,19 +304,18 @@ export default class LetterSquare {
    * Compare solutions based on 1. shortest number of total letters, 2. earliest in alphabetical order
    */
   compareSolution(a: string[], b: string[]): number {
-    return (
-      a.join("").length - b.join("").length ||
-      a.join("").localeCompare(b.join(""))
-    );
+    const aString = a.join(""),
+      bString = b.join("");
+    return aString.length - bString.length || aString.localeCompare(bString);
   }
 
   /*
-   * findBest - the method that the client calls after solve() which returns an array of all solutions with numWords.
+   * findBest - the method that the client calls after solve() which returns the best solution.
    * Serves as a wrapper method for solveRBVoid().
    * All solutions will have at most `numWords` words.
    * After exhausting all possible solutions, returns the best solution found.
    */
-  findBest(numWords: number): string[] {
+  findBest(numWords: number): LetterSquareResponse {
     const solveStart = Date.now();
     this.#solveRBVoid(0, 0, numWords);
     const sortStart = Date.now();
@@ -337,7 +323,10 @@ export default class LetterSquare {
       `It took ${(sortStart - solveStart) / 1000}s to get all solutions.`
     );
     this.#solutions.sort(this.compareSolution);
-    console.log(`Sorting took ${Date.now() - sortStart}ms`);
-    return this.#solutions.length === 0 ? [] : this.#solutions[0];
+    console.log(`Sorting took ${Date.now() - sortStart}ms.`);
+    return {
+      success: this.#solutions.length > 0,
+      data: this.#solutions.length === 0 ? [] : this.#solutions[0],
+    };
   }
 }

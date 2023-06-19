@@ -25,7 +25,7 @@ describe("functions_solve_http", () => {
   it("solve: should return status 400 if no query input", () => {
     const mocks = getMocks();
 
-    const solve = getFunction("solve");
+    const solve = getFunction("solveHttp");
     solve(mocks.req, mocks.res);
     assert.equal(mocks.res.status.calledOnceWith(400), true);
   });
@@ -34,7 +34,7 @@ describe("functions_solve_http", () => {
     const mocks = getMocks();
     mocks.req.query.input = "";
 
-    const solve = getFunction("solve");
+    const solve = getFunction("solveHttp");
     solve(mocks.req, mocks.res);
     assert.equal(mocks.res.status.calledOnceWith(400), true);
   });
@@ -43,7 +43,7 @@ describe("functions_solve_http", () => {
     const mocks = getMocks();
     mocks.req.query.input = ["ABC", "DEF", "GHI", "JKL"];
 
-    const solve = getFunction("solve");
+    const solve = getFunction("solveHttp");
     solve(mocks.req, mocks.res);
     assert.equal(mocks.res.sendStatus.calledOnceWith(500), true);
   }).timeout(15000);
@@ -52,7 +52,7 @@ describe("functions_solve_http", () => {
     const mocks = getMocks();
     mocks.req.query.input = ["SRG", "MDH", "IOL", "ENP"];
 
-    const solve = getFunction("solve");
+    const solve = getFunction("solveHttp");
     solve(mocks.req, mocks.res);
     sinon.assert.match(mocks.res.send.getCall(0).args[0].slice(-1), [
       ["MORPHS", "SHIELDING"],
@@ -64,7 +64,7 @@ describe("functions_solve_http", () => {
     mocks.req.query.input = ["SRG", "MDH", "IOL", "ENP"];
     mocks.req.query.length = 2;
 
-    const solve = getFunction("solve");
+    const solve = getFunction("solveHttp");
     solve(mocks.req, mocks.res);
     assert.equal(mocks.res.send.calledOnceWith(["MORPHS", "SINGLED"]), true);
   }).timeout(1000);
@@ -74,7 +74,7 @@ describe("functions_solve_http", () => {
     mocks.req.query.input = ["SRG", "MDH", "IOL", "ENP"];
     mocks.req.query.length = 1;
 
-    const solve = getFunction("solve");
+    const solve = getFunction("solveHttp");
     solve(mocks.req, mocks.res);
     assert.equal(mocks.res.send.calledOnceWith([]), true);
   });
