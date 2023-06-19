@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/letter-boxed/static/css/main.2c6c7b2c.css",
-    "main.js": "/letter-boxed/static/js/main.9593a7cc.js",
+    "main.js": "/letter-boxed/static/js/main.49833ee4.js",
     "index.html": "/letter-boxed/index.html",
     "main.2c6c7b2c.css.map": "/letter-boxed/static/css/main.2c6c7b2c.css.map",
-    "main.9593a7cc.js.map": "/letter-boxed/static/js/main.9593a7cc.js.map"
+    "main.49833ee4.js.map": "/letter-boxed/static/js/main.49833ee4.js.map"
   },
   "entrypoints": [
     "static/css/main.2c6c7b2c.css",
-    "static/js/main.9593a7cc.js"
+    "static/js/main.49833ee4.js"
   ]
 }
