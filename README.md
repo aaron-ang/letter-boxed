@@ -6,8 +6,8 @@ Check out the visualizer at https://aaron-ang.github.io/letter-boxed
 
 - Decoupled application
   - Client: React with TypeScript and Material UI
-  - Server: Google Cloud Function (Node.js)
-  - Tradeoff: reduced client RAM and CPU load in exchange for increased latency
+  - Server: Google Cloud Function (Go)
+  - Tradeoff: reduced client RAM and CPU load in exchange for increased response time
 - `Find best solution` button replaces `Solve` button after first run -> returns solution with the shortest number of words and total characters
 - Dropdown to customize visualization delay duration
 - Reduced max solve time for randomly-generated puzzles by choosing from the [top 17 most frequent letters](https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html)
@@ -16,7 +16,6 @@ Check out the visualizer at https://aaron-ang.github.io/letter-boxed
 
 **Planned features**
 
-- Rewrite Cloud Function in Go
 - Slider that steps through the solving process
 
 ## Demo video

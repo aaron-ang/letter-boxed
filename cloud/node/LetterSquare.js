@@ -101,11 +101,11 @@ class LetterSquare {
      * Compare solutions based on 1. shortest number of total letters, 2. earliest in alphabetical order
      */
     compareSolution(a, b) {
-        return (a.join("").length - b.join("").length ||
-            a.join("").localeCompare(b.join("")));
+        const aString = a.join(""), bString = b.join("");
+        return aString.length - bString.length || aString.localeCompare(bString);
     }
     /*
-     * findBest - the method that the client calls after solve() which returns an array of all solutions with numWords.
+     * findBest - the method that the client calls after solve() which returns the best solution.
      * Serves as a wrapper method for solveRBVoid().
      * All solutions will have at most `numWords` words.
      * After exhausting all possible solutions, returns the best solution found.
@@ -116,8 +116,11 @@ class LetterSquare {
         const sortStart = Date.now();
         console.log(`It took ${(sortStart - solveStart) / 1000}s to get all solutions.`);
         __classPrivateFieldGet(this, _LetterSquare_solutions, "f").sort(this.compareSolution);
-        console.log(`Sorting took ${Date.now() - sortStart}ms`);
-        return __classPrivateFieldGet(this, _LetterSquare_solutions, "f").length === 0 ? [] : __classPrivateFieldGet(this, _LetterSquare_solutions, "f")[0];
+        console.log(`Sorting took ${Date.now() - sortStart}ms.`);
+        return {
+            success: __classPrivateFieldGet(this, _LetterSquare_solutions, "f").length > 0,
+            data: __classPrivateFieldGet(this, _LetterSquare_solutions, "f").length === 0 ? [] : __classPrivateFieldGet(this, _LetterSquare_solutions, "f")[0],
+        };
     }
 }
 _LetterSquare_sides = new WeakMap(), _LetterSquare_letters = new WeakMap(), _LetterSquare_words = new WeakMap(), _LetterSquare_solvingProcess = new WeakMap(), _LetterSquare_solutions = new WeakMap(), _LetterSquare_instances = new WeakSet(), _LetterSquare_addLetter = function _LetterSquare_addLetter(letter, wordNum) {
@@ -152,8 +155,7 @@ _LetterSquare_sides = new WeakMap(), _LetterSquare_letters = new WeakMap(), _Let
         return letter === LetterSquare.lastLetter(__classPrivateFieldGet(this, _LetterSquare_words, "f")[wordNum - 1]);
     }
     // All other characters
-    const currWord = __classPrivateFieldGet(this, _LetterSquare_words, "f")[wordNum];
-    const newWord = currWord + letter;
+    const currWord = __classPrivateFieldGet(this, _LetterSquare_words, "f")[wordNum], newWord = currWord + letter;
     return (!__classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_onSameSide).call(this, letter, LetterSquare.lastLetter(currWord)) &&
         !__classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_alreadyUsed).call(this, newWord) &&
         LetterSquare.dictionary.hasString(newWord));
@@ -169,8 +171,7 @@ _LetterSquare_sides = new WeakMap(), _LetterSquare_letters = new WeakMap(), _Let
         return false;
     }
     // Loop through letters
-    for (let i = 0; i < __classPrivateFieldGet(this, _LetterSquare_letters, "f").length; i++) {
-        const currLetter = __classPrivateFieldGet(this, _LetterSquare_letters, "f")[i];
+    for (const currLetter of __classPrivateFieldGet(this, _LetterSquare_letters, "f")) {
         // Check if valid to add letter
         if (__classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_isValid).call(this, currLetter, wordNum, charNum)) {
             // Expand current word in solution by adding one letter
@@ -207,8 +208,7 @@ _LetterSquare_sides = new WeakMap(), _LetterSquare_letters = new WeakMap(), _Let
         return;
     }
     // Loop through letters
-    for (let i = 0; i < __classPrivateFieldGet(this, _LetterSquare_letters, "f").length; i++) {
-        const currLetter = __classPrivateFieldGet(this, _LetterSquare_letters, "f")[i];
+    for (const currLetter of __classPrivateFieldGet(this, _LetterSquare_letters, "f")) {
         // Check if valid to add letter
         if (__classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_isValid).call(this, currLetter, wordNum, charNum)) {
             // Expand current word in solution by adding one letter
@@ -218,8 +218,6 @@ _LetterSquare_sides = new WeakMap(), _LetterSquare_letters = new WeakMap(), _Let
             // Possible solutions exhausted, move to next word
             if (currWord.length >= 3 &&
                 LetterSquare.dictionary.hasFullWord(currWord)) {
-                // Append state to solvingProcess
-                __classPrivateFieldGet(this, _LetterSquare_solvingProcess, "f").push(__classPrivateFieldGet(this, _LetterSquare_words, "f").filter((word) => word !== ""));
                 __classPrivateFieldGet(this, _LetterSquare_instances, "m", _LetterSquare_solveRBVoid).call(this, wordNum + 1, 0, maxWords);
             }
             // Recursive call returns to current stack frame: Letter is not viable

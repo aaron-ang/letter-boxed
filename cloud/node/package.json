@@ -4,7 +4,7 @@
     "@google-cloud/functions-framework": "^3.0.0"
   },
   "scripts": {
-    "start": "functions-framework --target=solve",
+    "start": "functions-framework --target=solveHttp",
     "test": "c8 mocha index.test.js --exit"
   },
   "devDependencies": {
