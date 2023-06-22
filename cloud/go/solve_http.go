@@ -1,6 +1,8 @@
 package lettersquare
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -16,7 +18,6 @@ func init() {
 // SolveHTTP is an HTTP Cloud Function with a request parameter.
 func SolveHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "GET")
 
 	r.ParseForm()
 	input := r.Form["input[]"]
@@ -26,6 +27,8 @@ func SolveHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid input.", http.StatusBadRequest)
 		return
 	}
+
+	var res LetterSquareResponse
 	if len(r.Form["length"]) > 0 {
 		length, err := strconv.Atoi(r.Form["length"][0])
 		if err != nil {
@@ -33,10 +36,31 @@ func SolveHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid length.", http.StatusBadRequest)
 			return
 		}
-		resultJSON, _ := json.Marshal(driver.FindBest(length))
-		fmt.Fprintf(w, "%v", string(resultJSON))
+		res = driver.FindBest(length)
 	} else {
-		resultJSON, _ := json.Marshal(driver.Solve())
-		fmt.Fprintf(w, "%v", string(resultJSON))
+		res = driver.Solve()
 	}
+
+	resJSON, err := json.Marshal(res)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Error marshalling to JSON.", http.StatusInternalServerError)
+		return
+	}
+
+	var b bytes.Buffer
+	gz := gzip.NewWriter(&b)
+	if _, err := gz.Write(resJSON); err != nil {
+		fmt.Println(err)
+		http.Error(w, "Error compressing JSON.", http.StatusInternalServerError)
+		return
+	}
+	if err := gz.Close(); err != nil {
+		fmt.Println(err)
+		http.Error(w, "Error compressing JSON.", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Encoding", "gzip")
+	w.Write(b.Bytes())
 }

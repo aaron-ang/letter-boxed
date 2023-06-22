@@ -78,7 +78,6 @@ function App() {
       params: { input, length },
     });
     const { data }: { data: LetterSquareResponse } = res;
-    console.log(data);
     return {
       success: data.success,
       process: data.data,
