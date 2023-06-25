@@ -25,21 +25,21 @@ func fixDir() {
 	}
 }
 
-func NewDictionary(filename string) (*Dictionary, error) {
-	d := new(Dictionary)
-	d.contents = make(map[string]bool)
+func NewDictionary(filename string) (d *Dictionary, err error) {
 	fixDir()
-	file, err := os.Open(filename)
+	var file *os.File
+	file, err = os.Open(filename)
 	if err != nil {
-		return nil, err
+		return
 	}
 	defer file.Close()
+	d = new(Dictionary)
+	d.contents = make(map[string]bool)
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		d.add(strings.TrimSpace(scanner.Text()))
 	}
-
-	return d, nil
+	return
 }
 
 // Adds the specified word and all of its prefixes to the Dictionary.
