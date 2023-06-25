@@ -23,24 +23,29 @@ type LetterSquare struct {
 	dictionary     *Dictionary
 }
 
-type LetterSquareResponse struct {
-	Success bool `json:"success"`
-	Data    any  `json:"data"`
+type LetterSquareSolveResponse struct {
+	Success bool       `json:"success"`
+	Data    [][]string `json:"data"`
+}
+
+type LetterSquareFindBestResponse struct {
+	Success bool     `json:"success"`
+	Data    []string `json:"data"`
 }
 
 // Constructor for a puzzle with the specified sides, where each
 // side is a string containing the 3 letters from one side of the square.
 func NewLetterSquare(sides []string) (*LetterSquare, error) {
 	if sides == nil || len(sides) != 4 {
-		return nil, fmt.Errorf("sides must be a slice of 4 strings")
+		return nil, fmt.Errorf("sides must be a non-nil slice of 4 strings")
 	}
+
 	ls := new(LetterSquare)
 	ls.letters = make([]string, 12)
-
 	letterNum := 0
 	for _, side := range sides {
 		if len(side) != 3 {
-			return nil, fmt.Errorf("each side must be 3 letters long")
+			return nil, fmt.Errorf("each side must be a string of 3 letters")
 		}
 		for _, letter := range side {
 			ls.letters[letterNum] = string(letter)
@@ -52,12 +57,11 @@ func NewLetterSquare(sides []string) (*LetterSquare, error) {
 	ls.words = make([]string, mostWords)
 	ls.solvingProcess = make([][]string, 0)
 	ls.solutions = make([][]string, 0)
-	dict, err := NewDictionary(wordsFile)
+	d, err := NewDictionary(wordsFile)
 	if err != nil {
 		return nil, err
 	}
-	ls.dictionary = dict
-
+	ls.dictionary = d
 	return ls, nil
 }
 
@@ -192,7 +196,7 @@ func (ls *LetterSquare) solveRB(wordNum int, charNum int, maxWords int) bool {
 
 // Serves as a wrapper method for solveRB(), which it repeatedly calls
 // with a gradually increasing limit for the number of words in the solution.
-func (ls *LetterSquare) Solve() LetterSquareResponse {
+func (ls *LetterSquare) Solve() LetterSquareSolveResponse {
 	maxWords := 1
 	for maxWords <= mostWords {
 		fmt.Println("Looking for a solution of length", maxWords, "words.")
@@ -201,7 +205,7 @@ func (ls *LetterSquare) Solve() LetterSquareResponse {
 				return word != ""
 			})
 			ls.solvingProcess = append(ls.solvingProcess, step)
-			return LetterSquareResponse{true, ls.solvingProcess}
+			return LetterSquareSolveResponse{true, ls.solvingProcess}
 		}
 		maxWords++
 	}
@@ -214,7 +218,7 @@ func (ls *LetterSquare) Solve() LetterSquareResponse {
 		return b
 	}, []string{})
 	ls.solvingProcess = append(ls.solvingProcess, longest)
-	return LetterSquareResponse{false, ls.solvingProcess}
+	return LetterSquareSolveResponse{false, ls.solvingProcess}
 }
 
 func (ls *LetterSquare) solveRBVoid(wordNum int, charNum int, maxWords int) {
@@ -249,7 +253,7 @@ func (ls *LetterSquare) solveRBVoid(wordNum int, charNum int, maxWords int) {
 // All solutions will have at most `numWords` words.
 //
 // After exhausting all possible solutions, returns the best solution found.
-func (ls *LetterSquare) FindBest(numWords int) LetterSquareResponse {
+func (ls *LetterSquare) FindBest(numWords int) LetterSquareFindBestResponse {
 	solveStart := time.Now()
 	ls.solveRBVoid(0, 0, numWords)
 	fmt.Printf("It took %v to get all solutions.\n", time.Since(solveStart))
@@ -262,9 +266,9 @@ func (ls *LetterSquare) FindBest(numWords int) LetterSquareResponse {
 	fmt.Printf("Sorting took %v.\n", time.Since(sortStart))
 
 	if len(ls.solutions) == 0 {
-		return LetterSquareResponse{false, []string{}}
+		return LetterSquareFindBestResponse{false, []string{}}
 	}
-	return LetterSquareResponse{true, ls.solutions[0]}
+	return LetterSquareFindBestResponse{true, ls.solutions[0]}
 }
 
 func filter(arr []string, f func(string) bool) []string {
