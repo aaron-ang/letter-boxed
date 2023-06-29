@@ -2,22 +2,25 @@ Inspired by The NYTimes' [Letter Boxed](https://www.nytimes.com/puzzles/letter-b
 
 Check out the visualizer at https://aaron-ang.github.io/letter-boxed
 
-**Current features**
+**Current features/optimizations**
 
-- Decoupled application
-  - Client: React with TypeScript and Material UI
-  - Server: Google Cloud Function (Go)
-  - Tradeoff: reduced client RAM and CPU load in exchange for increased response time
-- `Find best solution` button replaces `Solve` button after first run -> returns solution with the shortest number of words and total characters
 - Dropdown to customize visualization delay duration
-- Reduced max solve time for randomly-generated puzzles by choosing from the [top 17 most frequent letters](https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html)
-- Cached previous puzzle and results to remove need for recomputation when switching between visualization toggle option
-- Testing with [Mocha](https://mochajs.org/), [Sinon](https://sinonjs.org/), and [C8](https://github.com/bcoe/c8)
+- Reduce tail latency for randomly-generated puzzles by choosing from the [top 17 most frequent letters](https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html)
+- Cache previous puzzle's input and result to prevent recomputation when toggling the visualization option
 
 **Planned features**
 
-- Slider that steps through the solving process
+- [x] `Find Best` button replaces `Solve` button after first run
+  - Returns solution with the smallest number of words and total characters
+- [x] Decouple application
+  - Server: [Node.js](https://nodejs.org) running on [Google Cloud](https://cloud.google.com/functions)
+  - Tradeoff: significant reduction in client RAM and CPU load in exchange for slightly increased response time
+  - [Gzip](https://www.gnu.org/software/gzip/) the server response to minimize network bandwidth
+  - Testing with [Mocha](https://mochajs.org/), [Sinon](https://sinonjs.org/), and [C8](https://github.com/bcoe/c8)
+- [x] Rewrite Cloud Function in [Go](https://go.dev)
+  - Implement unit tests
+- [x] Slider that steps through the solving process
 
-## Demo video
+## Demo video (Old)
 
 <img src='walkthrough.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
