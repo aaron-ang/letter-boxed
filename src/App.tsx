@@ -10,6 +10,7 @@ import Checkbox from "@mui/material/Checkbox";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
+import Slider from "@mui/material/Slider";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import { createTheme, responsiveFontSizes, ThemeProvider } from "@mui/material";
 
@@ -34,7 +35,7 @@ function App() {
     [isSuccess, setIsSuccess] = useState(true),
     [delay, setDelay] = useState(5),
     [prevInput, setPrevInput] = useState<string[]>([]),
-    [prevProcess, setprevProcess] = useState<string[][]>([]),
+    [prevProcess, setPrevProcess] = useState<string[][]>([]),
     [bestSolution, setBestSolution] = useState<string[]>([]);
 
   // To allow TextField state to vary while visualizing
@@ -44,10 +45,10 @@ function App() {
   const inputRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^a-z]/gi, "");
-    const name = e.target.name;
+    const value = e.target.value.replace(/[^a-z]/gi, ""),
+      name = e.target.name,
+      nextInput = inputRefs.current[parseInt(name) + 1];
     setFields({ ...fields, [name]: value.toUpperCase() });
-    const nextInput = inputRefs.current[parseInt(name) + 1];
     if (nextInput != null && value !== "") {
       nextInput.querySelector("input")?.focus();
     }
@@ -71,6 +72,21 @@ function App() {
 
   const handleVizChange = () => {
     setVisualize((prevState) => !prevState);
+  };
+
+  const handleSliderChange = (event: Event, value: number | number[]) => {
+    const step = prevProcess[value as number],
+      focusArr: boolean[] = Array(12).fill(false),
+      disabledArr: boolean[] = Array(12).fill(false);
+    updateFocus(step, focusArr);
+    focusArr.forEach((val, i) => {
+      if (!val) {
+        disabledArr[i] = true;
+      }
+    });
+    setFocusFields(focusArr);
+    setDisabledFields(disabledArr);
+    setSolution(step);
   };
 
   const getProcess = async (input: string[], length?: number) => {
@@ -110,7 +126,7 @@ function App() {
       }
 
       await updateBoard(process);
-      setprevProcess(process);
+      setPrevProcess(process);
       setIsSuccess(success);
       setPrevInput(input);
     } catch (err) {
@@ -152,6 +168,7 @@ function App() {
     setProgress(0);
     setIsSuccess(true);
     setFocusFields([]);
+    setDisabledFields([]);
 
     const keys = [...Array(12).keys()],
       charSet = new Set<string>(),
@@ -162,8 +179,8 @@ function App() {
         commonChars.charAt(Math.floor(Math.random() * commonChars.length))
       );
     }
-    const charArray = [...charSet];
-    const result: Record<number, string> = {};
+    const charArray = [...charSet],
+      result: Record<number, string> = {};
     keys.forEach((key) => (result[key] = charArray[key]));
     setFields(result);
   };
@@ -172,10 +189,12 @@ function App() {
     if (Object.values(fields).includes("")) {
       throw new Error("Please fill out all fields");
     }
-    const arr = Object.values(fields);
-    const res: string[] = [];
-    let string = "";
-    let i = 0;
+
+    const arr = Object.values(fields),
+      res: string[] = [];
+
+    let string = "",
+      i = 0;
 
     while (i < arr.length) {
       for (let j = 0; j < 3; j++) {
@@ -195,8 +214,8 @@ function App() {
     if (visualize) {
       await processVisualization(progressArr);
     } else {
-      const solution = progressArr[progressArr.length - 1] ?? [];
-      const focusArr: boolean[] = [];
+      const solution = progressArr[progressArr.length - 1] ?? [],
+        focusArr: boolean[] = [];
       updateFocus(solution, focusArr);
       setFocusFields(focusArr);
       setSolution(solution);
@@ -209,10 +228,10 @@ function App() {
       setSolution(state);
       setProgress((prevState) => prevState + (1 / progressArr.length) * 100);
       // If char in textfield is used, make it focused
-      const focusArr: boolean[] = Array(12).fill(false);
+      const focusArr: boolean[] = Array(12).fill(false),
+        disabledArr: boolean[] = Array(12).fill(false);
       updateFocus(state, focusArr);
       // If textfield is not focused, make it disabled
-      const disabledArr: boolean[] = [];
       focusArr.forEach((val, i) => {
         if (!val) {
           disabledArr[i] = true;
@@ -224,6 +243,9 @@ function App() {
     }
   };
 
+  /**
+   * Update focusArr in place based on the current state
+   */
   const updateFocus = (stateArr: string[], focusArr: boolean[]) => {
     const fieldsArr = Object.values(fields); // Get current characters in fields state
     stateArr?.forEach((word) => {
@@ -249,12 +271,10 @@ function App() {
       <MyAppBar />
 
       <Box
-        sx={{
-          paddingTop: "5em",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
+        paddingTop={10}
+        display={"flex"}
+        flexDirection={"column"}
+        alignItems={"center"}
       >
         <Stack direction="row" spacing={2}>
           {Object.entries(fields)
@@ -380,6 +400,15 @@ function App() {
             )
           }
         </Stack>
+
+        <Box width="50%" mr={1}>
+          <Slider
+            min={0}
+            max={prevProcess.length - 1}
+            onChange={handleSliderChange}
+            disabled={!prevProcess.length || solving}
+          />
+        </Box>
 
         <Stack direction="row" spacing={2}>
           <FormControlLabel

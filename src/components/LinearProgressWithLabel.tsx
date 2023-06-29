@@ -1,3 +1,4 @@
+import React from "react";
 import LinearProgress, {
   LinearProgressProps,
 } from "@mui/material/LinearProgress";
@@ -10,9 +11,11 @@ export default function LinearProgressWithLabel(
   return (
     <Box
       width="100%"
-      sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+      display={"flex"}
+      justifyContent={"center"}
+      alignItems={"center"}
     >
-      <Box sx={{ width: "50%", mr: 1 }}>
+      <Box width="50%" mr={1}>
         <LinearProgress variant="determinate" {...props} />
       </Box>
       <Box>
