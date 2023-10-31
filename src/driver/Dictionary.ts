@@ -7,35 +7,31 @@
  */
 
 export default class Dictionary {
-  #contents: Map<string, boolean>;
+  private contents: Map<string, boolean>;
 
   constructor(fileName: string) {
-    this.#contents = new Map<string, boolean>();
+    this.contents = new Map<string, boolean>();
     fetch(fileName)
       .then((res) => res.text())
       .then((text) => text.split("\n"))
-      .then((arr) => arr.forEach((word) => this.#add(word.trim())))
+      .then((arr) => arr.forEach((word) => this.add(word.trim())))
       .catch((err: Error) => console.log(err));
-  }
-
-  get contents(): Map<string, boolean> {
-    return this.#contents;
   }
 
   /*
    * add - adds the specified word and all of its prefixes to the Dictionary
    */
-  #add(word: string): void {
+  private add(word: string): void {
     let prefix = "";
     for (let i = 0; i < word.length; i++) {
       prefix += word.charAt(i);
-      if (!this.#contents.has(prefix)) {
-        this.#contents.set(prefix, false);
+      if (!this.contents.has(prefix)) {
+        this.contents.set(prefix, false);
       }
     }
 
     // true indicates a full word
-    this.#contents.set(prefix, true);
+    this.contents.set(prefix, true);
   }
 
   /*
@@ -46,7 +42,7 @@ export default class Dictionary {
     if (s === null || s === "") {
       return false;
     }
-    return this.#contents.has(s.toLowerCase());
+    return this.contents.has(s.toLowerCase());
   }
 
   /*
@@ -59,6 +55,6 @@ export default class Dictionary {
       return false;
     }
     s = s.toLowerCase();
-    return this.#contents.has(s) && (this.#contents.get(s) as boolean);
+    return this.contents.has(s) && (this.contents.get(s) as boolean);
   }
 }
