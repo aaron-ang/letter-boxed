@@ -6,22 +6,22 @@
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^5.14.14",
-    "@mui/lab": "^5.0.0-alpha.149",
-    "@mui/material": "^5.14.14",
-    "@testing-library/jest-dom": "^6.1.4",
-    "@testing-library/react": "^14.0.0",
+    "@mui/icons-material": "^5.15.0",
+    "@mui/lab": "^5.0.0-alpha.156",
+    "@mui/material": "^5.15.0",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.5.1",
-    "@types/jest": "^29.5.6",
-    "@types/node": "^20.8.7",
-    "@types/react": "^18.2.30",
-    "@types/react-dom": "^18.2.14",
-    "axios": "^1.5.1",
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.10.4",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.17",
+    "axios": "^1.6.2",
     "fs": "^0.0.1-security",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "^5.0.1",
-    "terser": "^5.22.0",
+    "terser": "^5.26.0",
     "web-vitals": "^3.5.0"
   },
   "scripts": {
@@ -44,9 +44,9 @@
     ]
   },
   "devDependencies": {
-    "@types/uuid": "^9.0.6",
-    "gh-pages": "^6.0.0",
+    "@types/uuid": "^9.0.7",
+    "gh-pages": "^6.1.0",
     "nth-check": "^2.1.1",
-    "typescript": "^5.2.2"
+    "typescript": "^4"
   }
 }
