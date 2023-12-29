@@ -4,17 +4,17 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "target": "es6",
+    "outDir": ".",
 
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true
   },
-  "include": ["src"]
+  "files": ["driver/Dictionary.ts", "driver/LetterSquare.ts"]
 }
