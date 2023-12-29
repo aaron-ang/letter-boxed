@@ -13,7 +13,7 @@ export type LetterSquareResponse = {
 
 export default class LetterSquare {
   static MOST_WORDS = 5;
-  static WORDS_FILE = `${process.env.PUBLIC_URL}/word_list.txt`;
+  static WORDS_FILE = "word_list.txt";
   static dictionary: Dictionary = new Dictionary(LetterSquare.WORDS_FILE);
 
   // The sides of the puzzle, given as four strings of length 3.

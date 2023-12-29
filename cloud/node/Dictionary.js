@@ -9,12 +9,12 @@ import fs from "fs";
 export default class Dictionary {
     constructor(fileName) {
         this.contents = new Map();
-        fs.readFile(fileName, "utf8", (err, data) => {
+        fs.readFile(fileName, "utf8", (err, text) => {
             if (err) {
                 console.log(err);
             }
             else {
-                data.split("\n").forEach((word) => {
+                text.split("\n").forEach((word) => {
                     this.add(word.trim());
                 });
             }

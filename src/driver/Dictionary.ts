@@ -6,16 +6,22 @@
  *
  */
 
+import fs from "fs";
+
 export default class Dictionary {
   private contents: Map<string, boolean>;
 
   constructor(fileName: string) {
     this.contents = new Map<string, boolean>();
-    fetch(fileName)
-      .then((res) => res.text())
-      .then((text) => text.split("\n"))
-      .then((arr) => arr.forEach((word) => this.add(word.trim())))
-      .catch((err: Error) => console.log(err));
+    fs.readFile(fileName, "utf8", (err, text) => {
+      if (err) {
+        console.log(err);
+      } else {
+        text.split("\n").forEach((word) => {
+          this.add(word.trim());
+        });
+      }
+    });
   }
 
   /*

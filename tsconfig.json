@@ -13,7 +13,8 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "outDir": "./cloud/node"
   },
-  "files": ["src/driver/Dictionary.ts", "src/driver/LetterSquare.ts"],
+  "files": ["src/driver/Dictionary.ts", "src/driver/LetterSquare.ts"]
 }
