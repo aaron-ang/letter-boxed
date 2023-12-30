@@ -20,6 +20,6 @@ Check out the visualizer at https://aaron-ang.github.io/letter-boxed
 - [x] Rewrite Cloud Function in [Go](cloud/go) with extensive unit testing
 - [x] Add slider that steps through the solving process
 
-## Demo video (Old)
+## Demo video
 
 <img src='walkthrough.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />

@@ -4,11 +4,17 @@
  *
  */
 
-export type LetterSquareResponse = {
+type LetterSquareResponse = {
   success: boolean;
   data: string[][] | string[];
 };
 
-export default class LetterSquare {
-  static MOST_WORDS = 5;
+export interface SolveResponse extends LetterSquareResponse {
+  data: string[][];
 }
+
+export interface FindBestResponse extends LetterSquareResponse {
+  data: string[];
+}
+
+export const MOST_WORDS = 5;

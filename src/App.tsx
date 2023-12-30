@@ -14,7 +14,11 @@ import Slider from "@mui/material/Slider";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import { createTheme, responsiveFontSizes, ThemeProvider } from "@mui/material";
 
-import LetterSquare, { LetterSquareResponse } from "./driver/LetterSquare";
+import {
+  SolveResponse,
+  FindBestResponse,
+  MOST_WORDS,
+} from "./driver/LetterSquare";
 import MyAppBar from "./components/MyAppBar";
 import MyTextField from "./components/MyTextField";
 import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
@@ -24,8 +28,7 @@ function App() {
     process.env.REACT_APP_CLOUD_FUNCTION_URL_PROD ||
     process.env.REACT_APP_CLOUD_FUNCTION_URL_DEV;
 
-  const defaultFields = {};
-  [...Array(12).keys()].forEach((key) => (defaultFields[key] = ""));
+  const defaultFields = { ...Array(12).fill("") };
 
   const [fields, setFields] = useState<Record<number, string>>(defaultFields),
     [solving, setSolving] = useState(false),
@@ -89,16 +92,17 @@ function App() {
     setSolution(step);
   };
 
-  const getProcess = async (input: string[], length?: number) => {
+  async function getSolution(input: string[]): Promise<SolveResponse>;
+  async function getSolution(
+    input: string[],
+    length: number
+  ): Promise<FindBestResponse>;
+  async function getSolution(input: string[], length?: number) {
     const res = await axios.get(CLOUD_FUNCTION_URL!, {
       params: { input, length },
     });
-    const { data }: { data: LetterSquareResponse } = res;
-    return {
-      success: data.success,
-      process: data.data,
-    };
-  };
+    return res.data;
+  }
 
   const sleep = (ms: number) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -119,8 +123,8 @@ function App() {
         process = prevProcess;
         success = true;
       } else {
-        const res = await getProcess(input);
-        process = res.process as string[][];
+        const res = await getSolution(input);
+        process = res.data;
         success = res.success;
         console.log(`response: ${success ? "success" : "failure"}`);
       }
@@ -146,14 +150,13 @@ function App() {
 
   const findBest = async () => {
     try {
-      const input = groupLetters(fields);
       if (bestSolution.length === 0) {
         console.log(
           `Looking for the best solution of length ${solution.length}...`
         );
         setSolving(true);
-        const res = await getProcess(input, solution.length);
-        setBestSolution(res.process as string[]);
+        const res = await getSolution(prevInput, solution.length);
+        setBestSolution(res.data);
       }
     } catch (err) {
       alert(err);
@@ -164,6 +167,8 @@ function App() {
 
   const generateRandom = () => {
     setSolution([]);
+    setPrevInput([]);
+    setPrevProcess([]);
     setBestSolution([]);
     setProgress(0);
     setIsSuccess(true);
@@ -455,7 +460,7 @@ function App() {
         </Grid>
 
         {!solving && !isSuccess && (
-          <h2>No solution found using up to {LetterSquare.MOST_WORDS} words</h2>
+          <h2>No solution found using up to {MOST_WORDS} words</h2>
         )}
       </Box>
     </ThemeProvider>
