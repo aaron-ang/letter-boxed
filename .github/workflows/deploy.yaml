@@ -30,6 +30,8 @@ jobs:
         run: |
           npm ci
           npm run build
+        env:
+          REACT_APP_CLOUD_FUNCTION_URL_PROD: ${{ vars.REACT_APP_CLOUD_FUNCTION_URL_PROD }}
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
