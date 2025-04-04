@@ -1,8 +1,8 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import axios from "axios";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
-import Grid from "@mui/material/Unstable_Grid2";
+import Grid from "@mui/material/Grid";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Button from "@mui/material/Button";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -23,10 +23,9 @@ import MyAppBar from "./components/MyAppBar";
 import MyTextField from "./components/MyTextField";
 import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
 
-function App() {
+export default function App() {
   const CLOUD_FUNCTION_URL =
-    process.env.REACT_APP_CLOUD_FUNCTION_URL_PROD ||
-    process.env.REACT_APP_CLOUD_FUNCTION_URL_DEV;
+    process.env.CLOUD_FUNCTION_URL_PROD || "http://localhost:8080/";
 
   const defaultFields = { ...Array(12).fill("") };
 
@@ -466,5 +465,3 @@ function App() {
     </ThemeProvider>
   );
 }
-
-export default App;
