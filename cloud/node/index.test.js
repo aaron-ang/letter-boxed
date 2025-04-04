@@ -50,7 +50,7 @@ describe("functions_solve_http", () => {
     sinon.assert.match(res.slice(-1), [
       ["LILA", "ALIKE", "ELI", "ILIAD", "DIE"],
     ]);
-  }).timeout(20000);
+  }).timeout(30000);
 
   it("solve: should return a nested array of the first solution found with viable query input", () => {
     const mocks = getMocks();

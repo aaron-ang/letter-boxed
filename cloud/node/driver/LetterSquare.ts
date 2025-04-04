@@ -237,14 +237,17 @@ export default class LetterSquare {
   solve(): LetterSquareResponse {
     let maxWords = 1;
 
+    console.time("solveRB");
     while (maxWords <= LetterSquare.MOST_WORDS) {
       console.log("Looking for a solution of length " + maxWords + "...");
       if (this.solveRB(0, 0, maxWords)) {
         this.solvingProcess.push(this.words.filter((word) => word !== ""));
+        console.timeEnd("solveRB");
         return { success: true, data: this.solvingProcess };
       }
       maxWords++;
     }
+    console.timeEnd("solveRB");
 
     console.log(
       "No solution found using up to " + LetterSquare.MOST_WORDS + " words."
