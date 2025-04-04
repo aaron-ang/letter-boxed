@@ -1,4 +1,4 @@
-import React, { MutableRefObject } from "react";
+import React from "react";
 import { TextField } from "@mui/material";
 
 type TextFieldProps = {
@@ -25,18 +25,20 @@ const MyTextField = React.forwardRef<(HTMLDivElement | null)[], TextFieldProps>(
   ({ idx, value, onChange, onKeyDown, focused, disabled }, ref) => (
     <TextField
       sx={sx}
-      inputProps={inputProps}
       name={idx}
-      ref={(el) =>
-        ((ref as MutableRefObject<(HTMLDivElement | null)[]>).current[
-          parseInt(idx)
-        ] = el)
-      }
+      ref={(el) => {
+        if (ref && "current" in ref && ref.current) {
+          ref.current[parseInt(idx)] = el;
+        }
+      }}
       value={value}
       onChange={onChange}
       onKeyDown={onKeyDown}
       focused={focused}
       disabled={disabled}
+      slotProps={{
+        htmlInput: inputProps,
+      }}
     />
   )
 );
