@@ -28,7 +28,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "npx serve@latest ./build",
-    "cloud:node": "cd cloud/node && bash run.sh"
+    "cloud:node": "cd cloud/node && bash run.sh",
+    "cloud:go": "cd cloud/go && bash run.sh"
   },
   "browserslist": {
     "production": [
