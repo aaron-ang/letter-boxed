@@ -35,7 +35,7 @@ jobs:
           pnpm install
           pnpm build
         env:
-          CLOUD_FUNCTION_URL_PROD: ${{ secrets.CLOUD_FUNCTION_URL_PROD }}
+          NEXT_PUBLIC_CLOUD_FUNCTION_URL_PROD: ${{ secrets.CLOUD_FUNCTION_URL_PROD }}
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:

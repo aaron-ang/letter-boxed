@@ -16,7 +16,7 @@ interface FindBestResponse extends LetterSquareResponse {
 
 export function useLetterBoxedAPI() {
   const CLOUD_FUNCTION_URL =
-    process.env.CLOUD_FUNCTION_URL_PROD || "http://localhost:8080/";
+    process.env.NEXT_PUBLIC_CLOUD_FUNCTION_URL_PROD || "http://localhost:8080/";
 
   const [solving, setSolving] = useState(false);
 
