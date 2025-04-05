@@ -18,14 +18,22 @@ permissions:
 jobs:
   deploy-frontend:
     concurrency: ci-${{ github.ref }}
+
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: "pnpm"
       - name: Install and Build 🔧
         run: |
-          npm ci
-          npm run build
+          pnpm install
+          pnpm build
         env:
           CLOUD_FUNCTION_URL_PROD: ${{ secrets.CLOUD_FUNCTION_URL_PROD }}
       - name: Deploy 🚀
@@ -34,14 +42,19 @@ jobs:
           folder: build
 
   deploy-backend:
+    runs-on: ubuntu-latest
+
     permissions:
       contents: "read"
+      id-token: "write"
 
     steps:
-      - id: auth
-        uses: google-github-actions/auth@v2
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          project_id: ${{ secrets.PROJECT_ID }}
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
       - name: Use gcloud CLI
@@ -50,7 +63,7 @@ jobs:
         run: |
           gcloud functions deploy letter-boxed-go \
             --gen2 \
-            --region us-central1 \
-            --runtime go123 \
-            --source cloud/go \
-            --entry-point SolveHTTP
+            --region=us-central1 \
+            --runtime=go123 \
+            --source=cloud/go \
+            --entry-point=SolveHTTP
