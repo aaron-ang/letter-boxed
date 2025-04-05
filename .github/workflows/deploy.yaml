@@ -6,13 +6,13 @@ name: Build and Deploy
 on:
   # Triggers the workflow on push events but only for the "main" branch
   push:
-    branches:
-      - "main"
+    branches: ["main"]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 permissions:
   contents: write
+  id-token: write
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -43,10 +43,6 @@ jobs:
 
   deploy-backend:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: "read"
-      id-token: "write"
 
     steps:
       - uses: actions/checkout@v4
