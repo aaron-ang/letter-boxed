@@ -29,8 +29,8 @@ export default class LetterSquare {
   // Words to build visualizer
   private solvingProcess: string[][];
 
-  // To find best solution in solveRBVoid
-  private solutions: string[][];
+  // To store the current best solution
+  private bestSolution: string[] | null;
 
   /*
    * Constructor for a puzzle with the specified sides, where each
@@ -57,7 +57,7 @@ export default class LetterSquare {
 
     this.words = [];
     this.solvingProcess = [];
-    this.solutions = [];
+    this.bestSolution = null;
     for (let i = 0; i < LetterSquare.MOST_WORDS; i++) {
       this.words[i] = "";
     }
@@ -237,14 +237,17 @@ export default class LetterSquare {
   solve(): LetterSquareResponse {
     let maxWords = 1;
 
+    console.time("solveRB");
     while (maxWords <= LetterSquare.MOST_WORDS) {
       console.log("Looking for a solution of length " + maxWords + "...");
       if (this.solveRB(0, 0, maxWords)) {
         this.solvingProcess.push(this.words.filter((word) => word !== ""));
+        console.timeEnd("solveRB");
         return { success: true, data: this.solvingProcess };
       }
       maxWords++;
     }
+    console.timeEnd("solveRB");
 
     console.log(
       "No solution found using up to " + LetterSquare.MOST_WORDS + " words."
@@ -258,24 +261,32 @@ export default class LetterSquare {
     return { success: false, data: this.solvingProcess };
   }
 
-  private solveRBVoid(
+  private solveRBFull(
     wordNum: number,
     charNum: number,
     maxWords: number
-  ): void {
+  ): number {
+    let numSolutions = 0;
+
     // First base case: puzzle solved
     if (
       this.allLettersUsed() &&
       LetterSquare.dictionary.hasFullWord(this.words[wordNum]) &&
       this.words[wordNum].length >= 3
     ) {
-      this.solutions.push(this.words.filter((word) => word !== ""));
-      return;
+      const currentSolution = this.words.filter((word) => word !== "");
+      if (
+        this.bestSolution === null ||
+        this.isBetterSolution(currentSolution, this.bestSolution)
+      ) {
+        this.bestSolution = [...currentSolution]; // Create a deep copy
+      }
+      return 1;
     }
 
     // Second base case: wordNum is too big, given the value of maxWords
     if (wordNum >= maxWords) {
-      return;
+      return 0;
     }
 
     // Loop through letters
@@ -284,7 +295,7 @@ export default class LetterSquare {
       if (this.isValid(currLetter, wordNum, charNum)) {
         // Expand current word in solution by adding one letter
         this.addLetter(currLetter, wordNum);
-        this.solveRBVoid(wordNum, charNum + 1, maxWords);
+        numSolutions += this.solveRBFull(wordNum, charNum + 1, maxWords);
 
         const currWord = this.words[wordNum];
         // Possible solutions exhausted, move to next word
@@ -292,7 +303,7 @@ export default class LetterSquare {
           currWord.length >= 3 &&
           LetterSquare.dictionary.hasFullWord(currWord)
         ) {
-          this.solveRBVoid(wordNum + 1, 0, maxWords);
+          numSolutions += this.solveRBFull(wordNum + 1, 0, maxWords);
         }
 
         // Recursive call returns to current stack frame: Letter is not viable
@@ -300,37 +311,40 @@ export default class LetterSquare {
       }
     }
     // Backtrack
-    return;
+    return numSolutions;
   }
 
   /*
-   * compareSolution - compare function to sort the solutions.
-   * Compare solutions based on 1. shortest number of total letters, 2. earliest in alphabetical order
+   * isBetterSolution - determines if solution a is better than solution b.
+   * Better means 1. shorter total length, 2. earlier in alphabetical order
    */
-  private compareSolution(a: string[], b: string[]): number {
+  private isBetterSolution(a: string[], b: string[]): boolean {
     const aString = a.join(""),
       bString = b.join("");
-    return aString.length - bString.length || aString.localeCompare(bString);
+    return (
+      aString.length < bString.length ||
+      (aString.length === bString.length && aString.localeCompare(bString) < 0)
+    );
   }
 
   /*
    * findBest - the method that the client calls after solve() which returns the best solution.
-   * Serves as a wrapper method for solveRBVoid().
+   * Serves as a wrapper method for solveRBFull().
    * All solutions will have at most `numWords` words.
    * After exhausting all possible solutions, returns the best solution found.
    */
   findBest(numWords: number): LetterSquareResponse {
-    const solveStart = Date.now();
-    this.solveRBVoid(0, 0, numWords);
-    const sortStart = Date.now();
-    console.log(
-      `It took ${(sortStart - solveStart) / 1000}s to get all solutions.`
-    );
-    this.solutions.sort(this.compareSolution);
-    console.log(`Sorting took ${Date.now() - sortStart}ms.`);
+    this.bestSolution = null;
+
+    console.time("solveRBFull");
+    const numSolutions = this.solveRBFull(0, 0, numWords);
+    console.timeEnd("solveRBFull");
+
+    console.log("Number of solutions found:", numSolutions);
+
     return {
-      success: this.solutions.length > 0,
-      data: this.solutions.length === 0 ? [] : this.solutions[0],
+      success: this.bestSolution !== null,
+      data: this.bestSolution || [],
     };
   }
 }

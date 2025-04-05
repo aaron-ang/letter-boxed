@@ -1,7 +1,7 @@
 import { gzipSync } from "zlib";
 import functions from "@google-cloud/functions-framework";
 
-import LetterSquare from "./LetterSquare.js";
+import LetterSquare from "./driver/LetterSquare.js";
 
 functions.http("solveHttp", (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");

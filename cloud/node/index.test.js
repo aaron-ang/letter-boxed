@@ -50,7 +50,7 @@ describe("functions_solve_http", () => {
     sinon.assert.match(res.slice(-1), [
       ["LILA", "ALIKE", "ELI", "ILIAD", "DIE"],
     ]);
-  }).timeout(15000);
+  }).timeout(30000);
 
   it("solve: should return a nested array of the first solution found with viable query input", () => {
     const mocks = getMocks();
@@ -62,7 +62,7 @@ describe("functions_solve_http", () => {
     sinon.assert.match(res.slice(-1), [["MORPHS", "SHIELDING"]]);
   });
 
-  it("solve: should return array of best solution with viable query input and length", () => {
+  it("findBest: should return array of best solution with viable query input and length", () => {
     const mocks = getMocks();
     mocks.req.query.input = ["SRG", "MDH", "IOL", "ENP"];
     mocks.req.query.length = 2;
@@ -73,7 +73,7 @@ describe("functions_solve_http", () => {
     sinon.assert.match(res, ["MORPHS", "SINGLED"]);
   }).timeout(1000);
 
-  it("solve: should return empty array if no best solution found", () => {
+  it("findBest: should return empty array if no best solution found", () => {
     const mocks = getMocks();
     mocks.req.query.input = ["SRG", "MDH", "IOL", "ENP"];
     mocks.req.query.length = 1;

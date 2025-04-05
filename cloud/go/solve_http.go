@@ -28,7 +28,7 @@ func SolveHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var res interface{}
+	var res any
 	if len(r.Form["length"]) > 0 {
 		length, err := strconv.Atoi(r.Form["length"][0])
 		if err != nil {

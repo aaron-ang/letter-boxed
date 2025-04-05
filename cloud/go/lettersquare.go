@@ -2,7 +2,6 @@ package lettersquare
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 	"time"
 )
@@ -19,8 +18,8 @@ type LetterSquare struct {
 	letters        []string
 	words          []string
 	solvingProcess [][]string
-	solutions      [][]string
 	dictionary     *Dictionary
+	bestSolution   []string
 }
 
 type LetterSquareSolveResponse struct {
@@ -29,8 +28,9 @@ type LetterSquareSolveResponse struct {
 }
 
 type LetterSquareFindBestResponse struct {
-	Success bool     `json:"success"`
-	Data    []string `json:"data"`
+	Success      bool     `json:"success"`
+	Data         []string `json:"data"`
+	NumSolutions int      `json:"numSolutions"`
 }
 
 // Constructor for a puzzle with the specified sides, where each
@@ -56,7 +56,6 @@ func NewLetterSquare(sides []string) (*LetterSquare, error) {
 	ls.sides = sides
 	ls.words = make([]string, mostWords)
 	ls.solvingProcess = make([][]string, 0)
-	ls.solutions = make([][]string, 0)
 	d, err := NewDictionary(wordsFile)
 	if err != nil {
 		return nil, err
@@ -198,6 +197,7 @@ func (ls *LetterSquare) solveRB(wordNum int, charNum int, maxWords int) bool {
 // with a gradually increasing limit for the number of words in the solution.
 func (ls *LetterSquare) Solve() LetterSquareSolveResponse {
 	maxWords := 1
+	solveStart := time.Now()
 	for maxWords <= mostWords {
 		fmt.Println("Looking for a solution of length", maxWords, "words.")
 		if ls.solveRB(0, 0, maxWords) {
@@ -205,10 +205,12 @@ func (ls *LetterSquare) Solve() LetterSquareSolveResponse {
 				return word != ""
 			})
 			ls.solvingProcess = append(ls.solvingProcess, step)
+			fmt.Println("SolveRB:", time.Since(solveStart))
 			return LetterSquareSolveResponse{true, ls.solvingProcess}
 		}
 		maxWords++
 	}
+	fmt.Println("SolveRB:", time.Since(solveStart))
 	fmt.Println("No solution found using up to", mostWords, "words.")
 
 	longest := reduce(ls.solvingProcess, func(a []string, b []string) []string {
@@ -221,54 +223,62 @@ func (ls *LetterSquare) Solve() LetterSquareSolveResponse {
 	return LetterSquareSolveResponse{false, ls.solvingProcess}
 }
 
-func (ls *LetterSquare) solveRBVoid(wordNum int, charNum int, maxWords int) {
+// isBetterSolution determines if solution a is better than solution b.
+// Better means 1. shorter total length, 2. earlier in alphabetical order
+func (ls *LetterSquare) isBetterSolution(a []string, b []string) bool {
+	aString, bString := strings.Join(a, ""), strings.Join(b, "")
+	return len(aString) < len(bString) || (len(aString) == len(bString) && strings.Compare(aString, bString) < 0)
+}
+
+func (ls *LetterSquare) solveRBFull(wordNum int, charNum int, maxWords int) int {
+	numSolutions := 0
+
 	if ls.allLettersUsed() &&
 		ls.dictionary.hasFullWord(ls.words[wordNum]) &&
 		len(ls.words[wordNum]) >= 3 {
-		ls.solutions = append(ls.solutions, filter(ls.words, notEmptyString))
-		return
+		currentSolution := filter(ls.words, notEmptyString)
+		if ls.bestSolution == nil || ls.isBetterSolution(currentSolution, ls.bestSolution) {
+			ls.bestSolution = make([]string, len(currentSolution))
+			copy(ls.bestSolution, currentSolution) // Create a deep copy
+		}
+		return 1
 	}
 
 	if wordNum >= maxWords {
-		return
+		return 0
 	}
 
 	for _, currLetter := range ls.letters {
 		if ls.isValid(currLetter, wordNum, charNum) {
 			ls.addLetter(currLetter, wordNum)
-			ls.solveRBVoid(wordNum, charNum+1, maxWords)
+			numSolutions += ls.solveRBFull(wordNum, charNum+1, maxWords)
 
 			currWord := ls.words[wordNum]
 			if len(currWord) >= 3 && ls.dictionary.hasFullWord(currWord) {
-				ls.solvingProcess = append(ls.solvingProcess, filter(ls.words, notEmptyString))
-				ls.solveRBVoid(wordNum+1, 0, maxWords)
+				numSolutions += ls.solveRBFull(wordNum+1, 0, maxWords)
 			}
 			ls.removeLetter(wordNum)
 		}
 	}
+	return numSolutions
 }
 
-// Serves as a wrapper method for solveRBVoid().
+// Serves as a wrapper method for solveRBFull().
 //
 // All solutions will have at most `numWords` words.
 //
 // After exhausting all possible solutions, returns the best solution found.
 func (ls *LetterSquare) FindBest(numWords int) LetterSquareFindBestResponse {
 	solveStart := time.Now()
-	ls.solveRBVoid(0, 0, numWords)
-	fmt.Printf("It took %v to get all solutions.\n", time.Since(solveStart))
+	ls.bestSolution = nil
+	numSolutions := ls.solveRBFull(0, 0, numWords)
+	fmt.Println("SolveRBFull:", time.Since(solveStart))
+	fmt.Println("Number of solutions found:", numSolutions)
 
-	sortStart := time.Now()
-	sort.Slice(ls.solutions, func(i, j int) bool {
-		iString, jString := strings.Join(ls.solutions[i], ""), strings.Join(ls.solutions[j], "")
-		return len(iString) < len(jString) || strings.Compare(iString, jString) < 0
-	})
-	fmt.Printf("Sorting took %v.\n", time.Since(sortStart))
-
-	if len(ls.solutions) == 0 {
-		return LetterSquareFindBestResponse{false, []string{}}
+	if ls.bestSolution == nil {
+		return LetterSquareFindBestResponse{false, []string{}, numSolutions}
 	}
-	return LetterSquareFindBestResponse{true, ls.solutions[0]}
+	return LetterSquareFindBestResponse{true, ls.bestSolution, numSolutions}
 }
 
 func filter(arr []string, f func(string) bool) []string {

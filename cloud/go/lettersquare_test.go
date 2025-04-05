@@ -106,7 +106,7 @@ func TestSolveHTTP(t *testing.T) {
 		want Response
 	}{
 		{Body{[]string{"IMG", "NAT", "RCL", "OSP"}, 0}, Response{[]string{"MASCOT", "TRIPLING"}, http.StatusOK}},
-		{Body{[]string{"IMG", "NAT", "RCL", "OSP"}, 2}, Response{[]string{"ACTORS", "SAMPLING"}, http.StatusOK}},
+		{Body{[]string{"IMG", "NAT", "RCL", "OSP"}, 2}, Response{[]string{"SCOT", "TRAMPLING"}, http.StatusOK}},
 		{Body{[]string{"IMG", "NAT", "RCL", "OSP"}, 1}, Response{[]string{}, http.StatusOK}},
 		{Body{[]string{"ABC", "DEF", "GHI", "JKL"}, 0}, Response{[]string{"LILA", "ALIKE", "ELI", "ILIAD", "DIE"}, http.StatusOK}},
 		{Body{[]string{"ABC", "DEF", "GHI"}, 0}, Response{[]string{}, http.StatusBadRequest}},

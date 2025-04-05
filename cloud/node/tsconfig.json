@@ -1,20 +1,19 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "target": "es6",
-    "outDir": ".",
-
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
+    "target": "ES2020",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    "noFallthroughCasesInSwitch": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "strict": true
+    "outDir": ".",
+    "rootDir": ".",
+    "strict": true,
+    "declaration": false,
+    "skipLibCheck": true
   },
-  "files": ["driver/Dictionary.ts", "driver/LetterSquare.ts"]
+  "include": [
+    "driver/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
