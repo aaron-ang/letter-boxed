@@ -15,7 +15,7 @@ export function useLetterBoxedGame() {
 
   // To allow TextField state to vary while visualizing
   const [disabledFields, setDisabledFields] = useState<boolean[]>([]);
-  const [focusFields, setFocusFields] = useState<boolean[]>([]);
+  const [focusFields, setFocusFields] = useState<number[]>([]);
 
   const inputRefs = useRef<Array<HTMLDivElement | null>>([]);
 
@@ -42,17 +42,35 @@ export function useLetterBoxedGame() {
     return res;
   };
 
-  const updateFocus = (stateArr: string[], focusArr: boolean[]) => {
+  const updateFocus = (stateArr: string[], focusArr: number[]) => {
     const fieldsArr = Object.values(fields); // Get current characters in fields state
-    stateArr?.forEach((word) => {
-      const charArray = [...word];
-      charArray.forEach((c) => {
-        const index = fieldsArr.indexOf(c);
-        if (index !== -1) {
-          focusArr[index] = true;
+
+    // Initialize all positions to -1 (not in sequence)
+    focusArr.fill(-1);
+
+    const allChars = stateArr.flatMap((word) => [...word]);
+
+    allChars.reduce(
+      (acc, char) => {
+        // Skip if we've already processed this character or reached position limit
+        if (acc.processedChars.has(char) || acc.positionCounter >= 12) {
+          return acc;
         }
-      });
-    });
+
+        const index = fieldsArr.indexOf(char);
+        if (index !== -1) {
+          focusArr[index] = acc.positionCounter;
+          acc.processedChars.add(char);
+          acc.positionCounter++;
+        }
+
+        return acc;
+      },
+      {
+        processedChars: new Set<string>(),
+        positionCounter: 0,
+      }
+    );
   };
 
   const generateRandom = () => {

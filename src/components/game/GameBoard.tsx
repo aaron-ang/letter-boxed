@@ -9,7 +9,7 @@ type GameBoardProps = {
   fields: Record<number, string>;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleBackspace: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  focusFields: boolean[];
+  focusFields: number[];
   disabledFields: boolean[];
   inputRefs: React.RefObject<Array<HTMLDivElement | null>>;
   solving: boolean;
@@ -39,7 +39,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
               value={value}
               onChange={handleInputChange}
               onKeyDown={handleBackspace}
-              focused={focusFields[parseInt(key)]}
+              sequencePosition={focusFields[parseInt(key)]}
               disabled={disabledFields[parseInt(key)]}
             />
           ))}
@@ -58,7 +58,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
                   value={value}
                   onChange={handleInputChange}
                   onKeyDown={handleBackspace}
-                  focused={focusFields[parseInt(key)]}
+                  sequencePosition={focusFields[parseInt(key)]}
                   disabled={disabledFields[parseInt(key)]}
                 />
               ))}
@@ -99,7 +99,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
                   value={value}
                   onChange={handleInputChange}
                   onKeyDown={handleBackspace}
-                  focused={focusFields[parseInt(key)]}
+                  sequencePosition={focusFields[parseInt(key)]}
                   disabled={disabledFields[parseInt(key)]}
                 />
               ))}
@@ -118,7 +118,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
               value={value}
               onChange={handleInputChange}
               onKeyDown={handleBackspace}
-              focused={focusFields[parseInt(key)]}
+              sequencePosition={focusFields[parseInt(key)]}
               disabled={disabledFields[parseInt(key)]}
             />
           ))}

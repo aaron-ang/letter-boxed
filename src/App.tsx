@@ -75,11 +75,11 @@ export default function App() {
 
   const handleSliderChange = (event: Event, value: number | number[]) => {
     const step = prevProcess[value as number],
-      focusArr: boolean[] = Array(12).fill(false),
+      focusArr: number[] = Array(12).fill(-1),
       disabledArr: boolean[] = Array(12).fill(false);
     updateFocus(step, focusArr);
     focusArr.forEach((val, i) => {
-      if (!val) {
+      if (val === -1) {
         disabledArr[i] = true;
       }
     });
@@ -95,7 +95,7 @@ export default function App() {
       await processVisualization(progressArr);
     } else {
       const solution = progressArr[progressArr.length - 1] ?? [],
-        focusArr: boolean[] = [];
+        focusArr: number[] = Array(12).fill(-1);
       updateFocus(solution, focusArr);
       setFocusFields(focusArr);
       setSolution(solution);
@@ -108,12 +108,12 @@ export default function App() {
       setSolution(state);
       setProgress((prevState) => prevState + (1 / progressArr.length) * 100);
       // If char in textfield is used, make it focused
-      const focusArr: boolean[] = Array(12).fill(false);
-      const disabledArr: boolean[] = focusArr.slice();
+      const focusArr: number[] = Array(12).fill(-1),
+        disabledArr: boolean[] = Array(12).fill(false);
       updateFocus(state, focusArr);
       // If textfield is not focused, make it disabled
       focusArr.forEach((val, i) => {
-        if (!val) {
+        if (val === -1) {
           disabledArr[i] = true;
         }
       });
