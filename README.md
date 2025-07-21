@@ -5,7 +5,7 @@ Check out the visualizer at https://aaron-ang.github.io/letter-boxed
 **Current features/optimizations**
 
 - Dropdown to customize visualization delay duration
-- Reduce tail latency for randomly-generated puzzles by choosing from the [top 17 most frequent letters](https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html)
+- Reduce tail latency for randomly-generated puzzles by choosing from the [top 17 most frequent letters](https://mathcenter.oxford.emory.edu/site/math125/englishLetterFreqs/)
 - Cache previous puzzle's input and result to prevent recomputation when toggling the visualization option
 
 **Upcoming features**
