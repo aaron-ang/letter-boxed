@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 
 export function useLetterBoxedGame() {
   const defaultFields = { ...Array(12).fill("") };
@@ -27,8 +27,8 @@ export function useLetterBoxedGame() {
     const arr = Object.values(fields);
     const res: string[] = [];
 
-    let string = "",
-      i = 0;
+    let string = "";
+    let i = 0;
 
     while (i < arr.length) {
       for (let j = 0; j < 3; j++) {
@@ -69,7 +69,7 @@ export function useLetterBoxedGame() {
       {
         processedChars: new Set<string>(),
         positionCounter: 0,
-      }
+      },
     );
   };
 
@@ -83,18 +83,18 @@ export function useLetterBoxedGame() {
     setFocusFields([]);
     setDisabledFields([]);
 
-    const keys = [...Array(12).keys()],
-      charSet = new Set<string>(),
-      commonChars = "EARIOTNSLCUDPMHGB"; // Source: https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
+    const keys = [...Array(12).keys()];
+    const charSet = new Set<string>();
+    const commonChars = "EARIOTNSLCUDPMHGB"; // Source: https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
 
     while (charSet.size < keys.length) {
-      charSet.add(
-        commonChars.charAt(Math.floor(Math.random() * commonChars.length))
-      );
+      charSet.add(commonChars.charAt(Math.floor(Math.random() * commonChars.length)));
     }
-    const charArray = [...charSet],
-      result: Record<number, string> = {};
-    keys.forEach((key) => (result[key] = charArray[key]));
+    const charArray = [...charSet];
+    const result: Record<number, string> = {};
+    for (const key of keys) {
+      result[key] = charArray[key];
+    }
     setFields(result);
   };
 

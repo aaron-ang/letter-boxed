@@ -1,13 +1,12 @@
-import axios from "axios";
-import Box from "@mui/material/Box";
-import { SelectChangeEvent } from "@mui/material/Select";
 import { createTheme, responsiveFontSizes, ThemeProvider } from "@mui/material";
-
-import MyAppBar from "./components/MyAppBar";
-import GameBoard from "./components/game/GameBoard";
+import Box from "@mui/material/Box";
+import type { SelectChangeEvent } from "@mui/material/Select";
+import axios from "axios";
 import ControlPanel from "./components/controls/ControlPanel";
-import VisualizationControls from "./components/visualization/VisualizationControls";
+import GameBoard from "./components/game/GameBoard";
+import MyAppBar from "./components/MyAppBar";
 import SolutionDisplay from "./components/solutions/SolutionDisplay";
+import VisualizationControls from "./components/visualization/VisualizationControls";
 import { useLetterBoxedAPI } from "./hooks/useLetterBoxedAPI";
 import { useLetterBoxedGame } from "./hooks/useLetterBoxedGame";
 
@@ -44,9 +43,9 @@ export default function App() {
   const { solving, setSolving, getSolution, sleep } = useLetterBoxedAPI();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^a-z]/gi, ""),
-      name = e.target.name,
-      nextInput = inputRefs.current[parseInt(name) + 1];
+    const value = e.target.value.replace(/[^a-z]/gi, "");
+    const name = e.target.name;
+    const nextInput = inputRefs.current[Number.parseInt(name, 10) + 1];
     setFields({ ...fields, [name]: value.toUpperCase() });
     if (nextInput != null && value !== "") {
       nextInput.querySelector("input")?.focus();
@@ -56,7 +55,7 @@ export default function App() {
   const handleBackspace = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const target = e.target as HTMLInputElement;
     if (e.key === "Backspace" && target.value === "") {
-      const prevInput = inputRefs.current[parseInt(target.name) - 1];
+      const prevInput = inputRefs.current[Number.parseInt(target.name, 10) - 1];
       prevInput?.querySelector("input")?.focus();
     }
   };
@@ -66,17 +65,17 @@ export default function App() {
   };
 
   const handleDelayChange = (event: SelectChangeEvent) => {
-    setDelay(parseInt(event.target.value));
+    setDelay(Number.parseInt(event.target.value, 10));
   };
 
   const handleVizChange = () => {
     setVisualize((prevState) => !prevState);
   };
 
-  const handleSliderChange = (event: Event, value: number | number[]) => {
-    const step = prevProcess[value as number],
-      focusArr: number[] = Array(12).fill(-1),
-      disabledArr: boolean[] = Array(12).fill(false);
+  const handleSliderChange = (_event: Event, value: number | number[]) => {
+    const step = prevProcess[value as number];
+    const focusArr: number[] = Array(12).fill(-1);
+    const disabledArr: boolean[] = Array(12).fill(false);
     updateFocus(step, focusArr);
     focusArr.forEach((val, i) => {
       if (val === -1) {
@@ -94,8 +93,8 @@ export default function App() {
     if (visualize) {
       await processVisualization(progressArr);
     } else {
-      const solution = progressArr[progressArr.length - 1] ?? [],
-        focusArr: number[] = Array(12).fill(-1);
+      const solution = progressArr[progressArr.length - 1] ?? [];
+      const focusArr: number[] = Array(12).fill(-1);
       updateFocus(solution, focusArr);
       setFocusFields(focusArr);
       setSolution(solution);
@@ -108,8 +107,8 @@ export default function App() {
       setSolution(state);
       setProgress((prevState) => prevState + (1 / progressArr.length) * 100);
       // If char in textfield is used, make it focused
-      const focusArr: number[] = Array(12).fill(-1),
-        disabledArr: boolean[] = Array(12).fill(false);
+      const focusArr: number[] = Array(12).fill(-1);
+      const disabledArr: boolean[] = Array(12).fill(false);
       updateFocus(state, focusArr);
       // If textfield is not focused, make it disabled
       focusArr.forEach((val, i) => {
@@ -131,7 +130,8 @@ export default function App() {
       console.log(`input: ${input}`);
       setSolving(true);
 
-      let process: string[][], success: boolean;
+      let process: string[][];
+      let success: boolean;
 
       // check cache
       if (input.every((v, i) => v === prevInput[i])) {
@@ -166,9 +166,7 @@ export default function App() {
   const findBest = async () => {
     try {
       if (bestSolution.length === 0) {
-        console.log(
-          `Looking for the best solution of length ${solution.length}...`
-        );
+        console.log(`Looking for the best solution of length ${solution.length}...`);
         setSolving(true);
         const res = await getSolution(prevInput, solution.length);
         setBestSolution(res.data);
@@ -193,12 +191,7 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <MyAppBar />
 
-      <Box
-        paddingTop={10}
-        display={"flex"}
-        flexDirection={"column"}
-        alignItems={"center"}
-      >
+      <Box sx={{ paddingTop: 10, display: "flex", flexDirection: "column", alignItems: "center" }}>
         <GameBoard
           fields={fields}
           handleInputChange={handleInputChange}

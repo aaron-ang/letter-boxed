@@ -1,5 +1,5 @@
-import React from "react";
 import { TextField } from "@mui/material";
+import React from "react";
 
 type TextFieldProps = {
   idx: string;
@@ -11,11 +11,11 @@ type TextFieldProps = {
 };
 
 const inputProps = {
-  inputMode: "text" as "text",
+  inputMode: "text" as const,
   pattern: "[a-zA-Z]+",
   maxLength: 1,
   style: {
-    textAlign: "center" as "center",
+    textAlign: "center" as const,
   },
   "aria-label": "input",
 };
@@ -50,7 +50,7 @@ const MyTextField = React.forwardRef<(HTMLDivElement | null)[], TextFieldProps>(
         name={idx}
         ref={(el) => {
           if (ref && "current" in ref && ref.current) {
-            ref.current[parseInt(idx)] = el;
+            ref.current[Number.parseInt(idx, 10)] = el;
           }
         }}
         value={value}
@@ -62,7 +62,7 @@ const MyTextField = React.forwardRef<(HTMLDivElement | null)[], TextFieldProps>(
         }}
       />
     );
-  }
+  },
 );
 
 export default MyTextField;

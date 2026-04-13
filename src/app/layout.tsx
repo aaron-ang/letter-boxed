@@ -7,11 +7,7 @@ export const metadata: Metadata = {
   description: "A solver for the Letter Boxed game",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>

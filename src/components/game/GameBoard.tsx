@@ -1,7 +1,7 @@
-import React from "react";
-import Stack from "@mui/material/Stack";
-import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
+import Grid from "@mui/material/Grid";
+import Stack from "@mui/material/Stack";
+import type React from "react";
 
 import MyTextField from "./MyTextField";
 
@@ -39,13 +39,13 @@ const GameBoard: React.FC<GameBoardProps> = ({
               value={value}
               onChange={handleInputChange}
               onKeyDown={handleBackspace}
-              sequencePosition={focusFields[parseInt(key)]}
-              disabled={disabledFields[parseInt(key)]}
+              sequencePosition={focusFields[Number.parseInt(key, 10)]}
+              disabled={disabledFields[Number.parseInt(key, 10)]}
             />
           ))}
       </Stack>
 
-      <Grid container justifyContent="center">
+      <Grid container sx={{ justifyContent: "center" }}>
         <Grid>
           <Stack direction="column" spacing={2}>
             {Object.entries(fields)
@@ -58,15 +58,15 @@ const GameBoard: React.FC<GameBoardProps> = ({
                   value={value}
                   onChange={handleInputChange}
                   onKeyDown={handleBackspace}
-                  sequencePosition={focusFields[parseInt(key)]}
-                  disabled={disabledFields[parseInt(key)]}
+                  sequencePosition={focusFields[Number.parseInt(key, 10)]}
+                  disabled={disabledFields[Number.parseInt(key, 10)]}
                 />
               ))}
           </Stack>
         </Grid>
 
         <Grid>
-          <Stack direction="column" spacing={5} m={5}>
+          <Stack direction="column" spacing={5} sx={{ m: 5 }}>
             <Button
               variant="outlined"
               color="secondary"
@@ -78,9 +78,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
             <Button
               variant="outlined"
               color="secondary"
-              onClick={() =>
-                window.open("https://www.nytimes.com/puzzles/letter-boxed")
-              }
+              onClick={() => window.open("https://www.nytimes.com/puzzles/letter-boxed")}
             >
               Visit NYT Site
             </Button>
@@ -99,8 +97,8 @@ const GameBoard: React.FC<GameBoardProps> = ({
                   value={value}
                   onChange={handleInputChange}
                   onKeyDown={handleBackspace}
-                  sequencePosition={focusFields[parseInt(key)]}
-                  disabled={disabledFields[parseInt(key)]}
+                  sequencePosition={focusFields[Number.parseInt(key, 10)]}
+                  disabled={disabledFields[Number.parseInt(key, 10)]}
                 />
               ))}
           </Stack>
@@ -118,8 +116,8 @@ const GameBoard: React.FC<GameBoardProps> = ({
               value={value}
               onChange={handleInputChange}
               onKeyDown={handleBackspace}
-              sequencePosition={focusFields[parseInt(key)]}
-              disabled={disabledFields[parseInt(key)]}
+              sequencePosition={focusFields[Number.parseInt(key, 10)]}
+              disabled={disabledFields[Number.parseInt(key, 10)]}
             />
           ))}
       </Stack>

@@ -1,12 +1,12 @@
-import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
+import FormControl from "@mui/material/FormControl";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
+import Select, { type SelectChangeEvent } from "@mui/material/Select";
 import Slider from "@mui/material/Slider";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
+import Stack from "@mui/material/Stack";
 
 import LinearProgressWithLabel from "./LinearProgressWithLabel";
 
@@ -33,7 +33,7 @@ const VisualizationControls: React.FC<VisualizationControlsProps> = ({
 }) => {
   return (
     <>
-      <Box width="50%" mr={1}>
+      <Box sx={{ width: "50%", mr: 1 }}>
         <Slider
           min={0}
           max={prevProcess.length - 1}

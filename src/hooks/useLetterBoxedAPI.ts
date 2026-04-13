@@ -1,5 +1,5 @@
-import { useState } from "react";
 import axios from "axios";
+import { useState } from "react";
 
 type LetterSquareResponse = {
   success: boolean;
@@ -21,12 +21,9 @@ export function useLetterBoxedAPI() {
   const [solving, setSolving] = useState(false);
 
   async function getSolution(input: string[]): Promise<SolveResponse>;
-  async function getSolution(
-    input: string[],
-    length: number
-  ): Promise<FindBestResponse>;
+  async function getSolution(input: string[], length: number): Promise<FindBestResponse>;
   async function getSolution(input: string[], length?: number) {
-    const res = await axios.get(CLOUD_FUNCTION_URL!, {
+    const res = await axios.get(CLOUD_FUNCTION_URL as string, {
       params: { input, length },
     });
     return res.data;
