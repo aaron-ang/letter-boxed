@@ -5,29 +5,22 @@
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
-    "@mui/icons-material": "^7.0.1",
-    "@mui/lab": "7.0.0-beta.10",
-    "@mui/material": "^7.0.1",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/jest": "^29.5.14",
-    "@types/node": "^22.14.0",
-    "@types/react": "^19.1.0",
-    "@types/react-dom": "^19.1.1",
-    "axios": "^1.8.4",
-    "fs": "0.0.1-security",
-    "next": "^15.2.4",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "terser": "^5.39.0",
-    "web-vitals": "^4.2.4"
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.0.0",
+    "@mui/lab": "9.0.0-beta.2",
+    "@mui/material": "^9.0.0",
+    "axios": "^1.15.0",
+    "next": "^16.2.3",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
   },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "npx serve@latest ./build",
+    "lint": "biome check src/",
+    "lint:fix": "biome check --write src/",
+    "format": "biome format --write src/",
     "cloud:node": "cd cloud/node && bash run.sh",
     "cloud:go": "cd cloud/go && bash run.sh"
   },
@@ -44,16 +37,26 @@
     ]
   },
   "devDependencies": {
-    "@types/uuid": "^10.0.0",
+    "@biomejs/biome": "^2.4.11",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "gh-pages": "^6.3.0",
-    "nth-check": "^2.1.1",
-    "typescript": "^5.8.2"
+    "nth-check": "^3.0.1",
+    "typescript": "^6.0.2"
   },
   "pnpm": {
     "overrides": {
       "postcss@<8.4.31": ">=8.4.31",
       "nth-check@<2.0.1": ">=2.0.1"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@biomejs/biome"
+    ]
   },
   "packageManager": "pnpm@10.7.1+sha512.2d92c86b7928dc8284f53494fb4201f983da65f0fb4f0d40baafa5cf628fa31dae3e5968f12466f17df7e97310e30f343a648baea1b9b350685dafafffdf5808"
 }
