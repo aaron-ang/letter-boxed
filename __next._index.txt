@@ -1,6 +1,0 @@
-1:"$Sreact.fragment"
-2:I[63160,["/letter-boxed/_next/static/chunks/01.veak3.m11t.js"],"default"]
-3:I[58298,["/letter-boxed/_next/static/chunks/01.veak3.m11t.js","/letter-boxed/_next/static/chunks/0brac4qpkz0k4.js"],"default"]
-4:I[44692,["/letter-boxed/_next/static/chunks/01.veak3.m11t.js"],"default"]
-:HL["/letter-boxed/_next/static/chunks/0ydl8rkm5j.l_.css","style"]
-0:{"rsc":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/letter-boxed/_next/static/chunks/0ydl8rkm5j.l_.css","precedence":"next"}],["$","script","script-0",{"src":"/letter-boxed/_next/static/chunks/01.veak3.m11t.js","async":true}]],["$","html",null,{"lang":"en","children":["$","body",null,{"children":["$","div",null,{"id":"root","children":["$","$L2",null,{"parallelRouterKey":"children","error":"$3","errorStyles":[],"errorScripts":[["$","script","script-0",{"src":"/letter-boxed/_next/static/chunks/0brac4qpkz0k4.js","async":true}]],"template":["$","$L4",null,{}],"notFound":[["$","div",null,{"children":[["$","h2",null,{"children":"Page Not Found"}],["$","p",null,{"children":"The page you are looking for does not exist."}]]}],[]]}]}]}]}]]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"_zZdiMrE2YhwK-E1I3mI7"}
