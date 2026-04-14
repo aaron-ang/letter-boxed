@@ -7,7 +7,6 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.0.0",
-    "@mui/lab": "9.0.0-beta.2",
     "@mui/material": "^9.0.0",
     "axios": "^1.15.0",
     "next": "^16.2.3",
@@ -21,6 +20,8 @@
     "lint": "biome check src/",
     "lint:fix": "biome check --write src/",
     "format": "biome format --write src/",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "cloud:node": "cd cloud/node && bash run.sh",
     "cloud:go": "cd cloud/go && bash run.sh"
   },
@@ -45,9 +46,12 @@
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@webgpu/types": "^0.1.69",
     "gh-pages": "^6.3.0",
     "nth-check": "^3.0.1",
-    "typescript": "^6.0.2"
+    "raw-loader": "^4.0.2",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.4"
   },
   "pnpm": {
     "overrides": {

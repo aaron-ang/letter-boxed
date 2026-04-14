@@ -1,4 +1,3 @@
-import LoadingButton from "@mui/lab/LoadingButton";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 
@@ -28,18 +27,15 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       <Button color="error" variant="contained" onClick={resetFields}>
         Reset
       </Button>
-      {
-        // If initial solve is not successful, do not show `Find Best` button
-        solution.length === 0 || !isSuccess || visualize || !fieldsMatch ? (
-          <LoadingButton loading={solving} variant="contained" onClick={handleSolve}>
-            Solve
-          </LoadingButton>
-        ) : (
-          <LoadingButton loading={solving} variant="contained" onClick={findBest}>
-            Find Best
-          </LoadingButton>
-        )
-      }
+      {solution.length === 0 || !isSuccess || visualize || !fieldsMatch ? (
+        <Button loading={solving} variant="contained" onClick={handleSolve}>
+          Solve
+        </Button>
+      ) : (
+        <Button loading={solving} variant="contained" onClick={findBest}>
+          Find Best
+        </Button>
+      )}
     </Stack>
   );
 };

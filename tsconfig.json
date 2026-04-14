@@ -1,10 +1,6 @@
 {
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "module": "esnext",
     "moduleResolution": "bundler",
     "target": "es6",
@@ -19,6 +15,7 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
+    "types": ["@webgpu/types"],
     "incremental": true,
     "plugins": [
       {
@@ -28,11 +25,10 @@
   },
   "include": [
     "build/types/**/*.ts",
+    "build/dev/types/**/*.ts",
     "src",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

@@ -20,16 +20,16 @@ const SolutionDisplay: React.FC<SolutionDisplayProps> = ({
       <Grid container>
         <Grid sx={{ textAlign: "center", marginX: 2 }}>
           {bestSolution.length !== 0 && <h3>Initial solution:</h3>}
-          {solution?.map((word, index) => (
-            <p key={index}>{word}</p>
+          {solution?.map((word) => (
+            <p key={word}>{word}</p>
           ))}
         </Grid>
 
         {bestSolution.length !== 0 && (
           <Grid sx={{ textAlign: "center", marginX: 2 }}>
             <h3>Best solution:</h3>
-            {bestSolution.map((word, index) => (
-              <p key={index}>{word}</p>
+            {bestSolution.map((word) => (
+              <p key={word}>{word}</p>
             ))}
           </Grid>
         )}

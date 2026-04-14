@@ -1,14 +1,13 @@
 import { createTheme, responsiveFontSizes, ThemeProvider } from "@mui/material";
 import Box from "@mui/material/Box";
 import type { SelectChangeEvent } from "@mui/material/Select";
-import axios from "axios";
 import ControlPanel from "./components/controls/ControlPanel";
 import GameBoard from "./components/game/GameBoard";
 import MyAppBar from "./components/MyAppBar";
 import SolutionDisplay from "./components/solutions/SolutionDisplay";
 import VisualizationControls from "./components/visualization/VisualizationControls";
-import { useLetterBoxedAPI } from "./hooks/useLetterBoxedAPI";
 import { useLetterBoxedGame } from "./hooks/useLetterBoxedGame";
+import { useSolver } from "./hooks/useSolver";
 
 export default function App() {
   const {
@@ -40,7 +39,7 @@ export default function App() {
     generateRandom,
   } = useLetterBoxedGame();
 
-  const { solving, setSolving, getSolution, sleep } = useLetterBoxedAPI();
+  const { solving, setSolving, getSolution, sleep } = useSolver();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^a-z]/gi, "");
@@ -149,15 +148,8 @@ export default function App() {
       setIsSuccess(success);
       setPrevInput(input);
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        if (err.response?.status === 504) {
-          alert("Request timed out. Please try again.");
-        } else {
-          alert(err.message);
-        }
-      } else {
-        console.log(err);
-      }
+      const message = err instanceof Error ? err.message : String(err);
+      alert(message);
     } finally {
       setSolving(false);
     }
