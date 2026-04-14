@@ -3,9 +3,8 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "module": "esnext",
     "moduleResolution": "bundler",
-    "target": "es6",
+    "target": "es2015",
     "allowJs": true,
-    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
@@ -15,20 +14,8 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
-    "types": ["@webgpu/types"],
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ]
+    "types": ["@webgpu/types"]
   },
-  "include": [
-    "build/types/**/*.ts",
-    "build/dev/types/**/*.ts",
-    "src",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
-  ],
+  "include": ["src"],
   "exclude": ["node_modules"]
 }

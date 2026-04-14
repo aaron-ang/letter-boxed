@@ -1,6 +1,5 @@
 import type { ValidWord } from "../types";
-// @ts-expect-error — WGSL loaded as raw string via raw-loader
-import shaderSource from "./wordCoverage.wgsl";
+import shaderSource from "./wordCoverage.wgsl?raw";
 
 const WORKGROUP_SIZE = 256;
 const CHAIN_STRIDE = 10; // 10 u32s per Chain struct (40 bytes)
@@ -48,7 +47,7 @@ export class GPUSolver {
     const n = validWords.length;
     if (n === 0) return { success: false, data: [] };
 
-    const shaderModule = this.device.createShaderModule({ code: shaderSource as string });
+    const shaderModule = this.device.createShaderModule({ code: shaderSource });
 
     const pipeline = this.device.createComputePipeline({
       layout: "auto",

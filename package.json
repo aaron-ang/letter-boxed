@@ -8,22 +8,18 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.0.0",
     "@mui/material": "^9.0.0",
-    "axios": "^1.15.0",
-    "next": "^16.2.3",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "npx serve@latest ./build",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "lint": "biome check src/",
     "lint:fix": "biome check --write src/",
     "format": "biome format --write src/",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "cloud:node": "cd cloud/node && bash run.sh",
-    "cloud:go": "cd cloud/go && bash run.sh"
+    "test:watch": "vitest"
   },
   "browserslist": {
     "production": [
@@ -46,11 +42,12 @@
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
     "@webgpu/types": "^0.1.69",
     "gh-pages": "^6.3.0",
     "nth-check": "^3.0.1",
-    "raw-loader": "^4.0.2",
     "typescript": "^6.0.2",
+    "vite": "^8.0.8",
     "vitest": "^4.1.4"
   },
   "pnpm": {
@@ -62,5 +59,5 @@
       "@biomejs/biome"
     ]
   },
-  "packageManager": "pnpm@10.7.1+sha512.2d92c86b7928dc8284f53494fb4201f983da65f0fb4f0d40baafa5cf628fa31dae3e5968f12466f17df7e97310e30f343a648baea1b9b350685dafafffdf5808"
+  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
 }
