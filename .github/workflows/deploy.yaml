@@ -1,24 +1,16 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Build and Deploy
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push events but only for the "main" branch
   push:
     branches: ["main"]
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 permissions:
   contents: write
-  id-token: write
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  deploy-frontend:
+  deploy:
     concurrency: ci-${{ github.ref }}
-
     runs-on: ubuntu-latest
 
     steps:
@@ -34,32 +26,7 @@ jobs:
         run: |
           pnpm install
           pnpm build
-        env:
-          NEXT_PUBLIC_CLOUD_FUNCTION_URL_PROD: ${{ secrets.CLOUD_FUNCTION_URL_PROD }}
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: build
-
-  deploy-backend:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-          project_id: ${{ secrets.PROJECT_ID }}
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-      - name: Use gcloud CLI
-        run: gcloud info
-      - name: Deploy to Cloud Run
-        run: |
-          gcloud functions deploy letter-boxed-go \
-            --gen2 \
-            --region=us-central1 \
-            --runtime=go123 \
-            --source=cloud/go \
-            --entry-point=SolveHTTP

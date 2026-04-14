@@ -8,18 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-go:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Go
-        uses: actions/setup-go@v5
-      - name: Test Go code
-        run: |
-          cd cloud/go
-          go test
-
-  test-node:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,8 +18,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           cache: "pnpm"
-      - name: Test Node code
-        run: |
-          cd cloud/node
-          pnpm install
-          pnpm test
+      - name: Install
+        run: pnpm install
+      - name: Lint
+        run: pnpm lint
+      - name: Build
+        run: pnpm build
+      - name: Test
+        run: pnpm test
