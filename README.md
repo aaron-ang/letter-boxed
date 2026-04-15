@@ -1,6 +1,8 @@
-Inspired by The NYTimes' [Letter Boxed](https://www.nytimes.com/puzzles/letter-boxed) Game
+# Letter Boxed Solver
 
-Check out the visualizer at https://aaron-ang.github.io/letter-boxed
+Inspired by The NYTimes' [Letter Boxed](https://www.nytimes.com/puzzles/letter-boxed) game.
+
+Check out the visualizer at [aaron-ang.github.io/letter-boxed](https://aaron-ang.github.io/letter-boxed).
 
 ## Architecture
 
@@ -32,13 +34,13 @@ The solver runs entirely in the browser — no server required.
 ## Development
 
 ```sh
-pnpm install
-pnpm dev        # start dev server
-pnpm build      # production build
-pnpm test       # run tests
-pnpm lint       # check linting
+bun install
+bun run dev     # start dev server
+bun run build   # production build
+bun run test    # run tests
+bun run lint    # check linting
 ```
 
 ## Demo video
 
-<img src='walkthrough.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+![Video Walkthrough](walkthrough.gif)
