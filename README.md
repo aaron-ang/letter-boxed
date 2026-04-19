@@ -46,4 +46,4 @@ bun run format  # format files
 
 ## Demo video
 
-![Video Walkthrough](walkthrough.gif)
+![Video Walkthrough](assets/walkthrough.gif)
