@@ -2,7 +2,11 @@
   "json.schemas": [
     {
       "fileMatch": ["biome.json"],
-      "url": "https://biomejs.dev/schemas/2.0.0/schema.json"
+      "url": "https://biomejs.dev/schemas/2.4.11/schema.json"
+    },
+    {
+      "fileMatch": ["components.json"],
+      "url": "https://ui.shadcn.com/schema.json"
     }
   ]
 }

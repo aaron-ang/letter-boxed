@@ -1,15 +1,13 @@
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
 import type React from "react";
 
-import { useGameStore } from "../../store/gameStore";
-import MyTextField from "./MyTextField";
+import MyTextField from "@/components/game/MyTextField";
+import { Button } from "@/components/ui/button";
+import { useGameStore } from "@/store/gameStore";
 
 type GameBoardProps = {
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleBackspace: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  inputRefs: React.RefObject<Array<HTMLDivElement | null>>;
+  inputRefs: React.RefObject<Array<HTMLInputElement | null>>;
 };
 
 // Grid position per field index (row, col) — 5x5 grid, corners empty
@@ -40,49 +38,44 @@ const GameBoard: React.FC<GameBoardProps> = ({ handleInputChange, handleBackspac
   const generateRandom = useGameStore((s) => s.generateRandom);
 
   return (
-    <Box
-      sx={{
-        display: "grid",
+    <div
+      className="grid items-center justify-items-center"
+      style={{
         gridTemplateColumns: "repeat(5, auto)",
         gridTemplateRows: "repeat(5, auto)",
-        columnGap: 3,
-        rowGap: 3,
-        alignItems: "center",
-        justifyItems: "center",
+        columnGap: 24,
+        rowGap: 24,
       }}
     >
       {Object.entries(fields).map(([key, value], i) => {
         const [row, col] = POS[i];
         return (
-          <Box key={key} sx={{ gridRow: row, gridColumn: col }}>
+          <div key={key} style={{ gridRow: row, gridColumn: col }}>
             <MyTextField
               idx={key}
-              ref={inputRefs}
+              inputRefs={inputRefs}
               value={value}
               onChange={handleInputChange}
               onKeyDown={handleBackspace}
               usages={usages[i] ?? []}
               disabled={disabledFields[i] ?? false}
             />
-          </Box>
+          </div>
         );
       })}
 
-      <Box sx={{ gridRow: "2 / 5", gridColumn: "2 / 5" }}>
-        <Stack direction="column" spacing={3}>
-          <Button variant="outlined" color="secondary" disabled={solving} onClick={generateRandom}>
-            Random Puzzle
-          </Button>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => window.open("https://www.nytimes.com/puzzles/letter-boxed")}
-          >
-            Visit NYT Site
-          </Button>
-        </Stack>
-      </Box>
-    </Box>
+      <div className="flex flex-col gap-3" style={{ gridRow: "2 / 5", gridColumn: "2 / 5" }}>
+        <Button variant="outline" disabled={solving} onClick={generateRandom}>
+          Random Puzzle
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => window.open("https://www.nytimes.com/puzzles/letter-boxed")}
+        >
+          Visit NYT Site
+        </Button>
+      </div>
+    </div>
   );
 };
 

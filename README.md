@@ -8,7 +8,7 @@ Check out the visualizer at [aaron-ang.github.io/letter-boxed](https://aaron-ang
 
 The solver runs entirely in the browser — no server required.
 
-- **Frontend**: React + MUI, built with [Vite](https://vite.dev/)
+- **Frontend**: React + [shadcn/ui](https://ui.shadcn.com/) + [Tailwind v4](https://tailwindcss.com/), built with [Vite](https://vite.dev/)
 - **State**: [Zustand](https://zustand-demo.pmnd.rs/) store, no prop drilling
 - **Solver**: TypeScript, runs in a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API) to keep the UI responsive
 - **GPU acceleration**: [WebGPU](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API) compute shaders for `Find Best` (with CPU fallback)

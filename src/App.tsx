@@ -1,35 +1,31 @@
-import { createTheme, responsiveFontSizes, ThemeProvider } from "@mui/material";
-import Box from "@mui/material/Box";
 import { useRef } from "react";
 
-import ControlPanel from "./components/controls/ControlPanel";
-import GameBoard from "./components/game/GameBoard";
-import MyAppBar from "./components/MyAppBar";
-import SolutionDisplay from "./components/solutions/SolutionDisplay";
-import VisualizationControls from "./components/visualization/VisualizationControls";
-import { getSolution } from "./solver/solverClient";
-import { groupLetters, useGameStore } from "./store/gameStore";
+import ControlPanel from "@/components/controls/ControlPanel";
+import GameBoard from "@/components/game/GameBoard";
+import MyAppBar from "@/components/MyAppBar";
+import SolutionDisplay from "@/components/solutions/SolutionDisplay";
+import VisualizationControls from "@/components/visualization/VisualizationControls";
+import { getSolution } from "@/solver/solverClient";
+import { groupLetters, useGameStore } from "@/store/gameStore";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export default function App() {
-  const inputRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^a-z]/gi, "");
     const name = e.target.name;
     useGameStore.getState().setFieldAt(name, value);
-    const nextInput = inputRefs.current[Number.parseInt(name, 10) + 1];
-    if (nextInput != null && value !== "") {
-      nextInput.querySelector("input")?.focus();
+    if (value !== "") {
+      inputRefs.current[Number.parseInt(name, 10) + 1]?.focus();
     }
   };
 
   const handleBackspace = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const target = e.target as HTMLInputElement;
     if (e.key === "Backspace" && target.value === "") {
-      const prevInput = inputRefs.current[Number.parseInt(target.name, 10) - 1];
-      prevInput?.querySelector("input")?.focus();
+      inputRefs.current[Number.parseInt(target.name, 10) - 1]?.focus();
     }
   };
 
@@ -82,7 +78,6 @@ export default function App() {
         useGameStore.getState().gotoStep(i);
         await sleep(useGameStore.getState().delay);
       }
-      // leave disabledFields populated (grayed out unused letters)
     } else {
       const finalIdx = process.length - 1;
       if (finalIdx >= 0) {
@@ -106,20 +101,14 @@ export default function App() {
     }
   };
 
-  let theme = createTheme({
-    typography: { fontFamily: "Open Sans, sans-serif" },
-  });
-  theme = responsiveFontSizes(theme);
-
   const fields = useGameStore((s) => s.fields);
   const prevInput = useGameStore((s) => s.prevInput);
   const fieldsMatch = Object.values(fields).join("") === prevInput.join("");
 
   return (
-    <ThemeProvider theme={theme}>
+    <>
       <MyAppBar />
-
-      <Box sx={{ paddingTop: 10, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <div className="flex flex-col items-center pt-10">
         <GameBoard
           handleInputChange={handleInputChange}
           handleBackspace={handleBackspace}
@@ -136,7 +125,7 @@ export default function App() {
         <VisualizationControls />
 
         <SolutionDisplay />
-      </Box>
-    </ThemeProvider>
+      </div>
+    </>
   );
 }

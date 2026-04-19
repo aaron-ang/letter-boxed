@@ -1,4 +1,4 @@
-import type { ValidWord } from "../types";
+import type { ValidWord } from "@/solver/types";
 import shaderSource from "./wordCoverage.wgsl?raw";
 
 // Chain layout: [w0, w1, w2, w3, w4, coverageMask, lastWordIdx, wordCount, totalChars]

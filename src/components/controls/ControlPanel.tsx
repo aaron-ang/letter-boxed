@@ -1,7 +1,7 @@
-import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
+import { LoaderCircle } from "lucide-react";
 
-import { useGameStore } from "../../store/gameStore";
+import { Button } from "@/components/ui/button";
+import { useGameStore } from "@/store/gameStore";
 
 type ControlPanelProps = {
   fieldsMatch: boolean;
@@ -24,20 +24,22 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const showFindBest = solution.length > 0 && isSuccess && !visualize && fieldsMatch;
 
   return (
-    <Stack direction="row" spacing={2} sx={{ mt: 6, mb: 2 }}>
-      <Button color="error" variant="contained" onClick={resetFields}>
+    <div className="mt-6 mb-2 flex flex-row gap-2">
+      <Button variant="destructive" onClick={resetFields}>
         Reset
       </Button>
       {showFindBest ? (
-        <Button loading={solving} variant="contained" onClick={findBest}>
+        <Button disabled={solving} onClick={findBest}>
+          {solving && <LoaderCircle className="animate-spin" />}
           Find Best
         </Button>
       ) : (
-        <Button loading={solving} variant="contained" onClick={handleSolve}>
+        <Button disabled={solving} onClick={handleSolve}>
+          {solving && <LoaderCircle className="animate-spin" />}
           Solve
         </Button>
       )}
-    </Stack>
+    </div>
   );
 };
 

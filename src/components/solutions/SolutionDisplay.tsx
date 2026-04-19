@@ -1,6 +1,4 @@
-import Grid from "@mui/material/Grid";
-
-import { useGameStore } from "../../store/gameStore";
+import { useGameStore } from "@/store/gameStore";
 
 const MOST_WORDS = 5;
 
@@ -12,25 +10,31 @@ const SolutionDisplay: React.FC = () => {
 
   return (
     <>
-      <Grid container>
-        <Grid sx={{ textAlign: "center", marginX: 2 }}>
-          {bestSolution.length !== 0 && <h3>Initial solution:</h3>}
+      <div className="flex flex-row justify-center">
+        <div className="mx-2 text-center">
+          {bestSolution.length !== 0 && (
+            <h3 className="font-semibold text-lg">Initial solution:</h3>
+          )}
           {solution?.map((word) => (
             <p key={word}>{word}</p>
           ))}
-        </Grid>
+        </div>
 
         {bestSolution.length !== 0 && (
-          <Grid sx={{ textAlign: "center", marginX: 2 }}>
-            <h3>Best solution:</h3>
+          <div className="mx-2 text-center">
+            <h3 className="font-semibold text-lg">Best solution:</h3>
             {bestSolution.map((word) => (
               <p key={word}>{word}</p>
             ))}
-          </Grid>
+          </div>
         )}
-      </Grid>
+      </div>
 
-      {!solving && !isSuccess && <h2>No solution found using up to {MOST_WORDS} words</h2>}
+      {!solving && !isSuccess && (
+        <h2 className="mt-2 font-semibold text-xl">
+          No solution found using up to {MOST_WORDS} words
+        </h2>
+      )}
     </>
   );
 };
