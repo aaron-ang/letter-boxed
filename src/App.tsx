@@ -140,7 +140,6 @@ export default function App() {
         const res = await getSolution(input);
         process = res.data;
         success = res.success;
-        console.log(`response: ${success ? "success" : "failure"}`);
       }
 
       await updateBoard(process);
