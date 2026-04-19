@@ -1,11 +1,24 @@
 import Dictionary from "./dictionary";
 import { GPUSolver } from "./gpu/gpuSolver";
 import { Solver } from "./solver";
-import { buildPuzzleContext, type SolverRequest, type SolverResponse } from "./types";
+import {
+  buildPuzzleContext,
+  type PuzzleContext,
+  type SolverRequest,
+  type SolverResponse,
+  type ValidWord,
+} from "./types";
 
 const WORD_LIST_URL = "/letter-boxed/word_list.txt";
 
 let gpuSolver: GPUSolver | null | undefined; // undefined = not checked yet
+
+interface PuzzleCache {
+  key: string;
+  ctx: PuzzleContext;
+  validWords: ValidWord[];
+}
+let puzzleCache: PuzzleCache | null = null;
 
 async function getGPUSolver(): Promise<GPUSolver | null> {
   if (gpuSolver !== undefined) return gpuSolver;
@@ -18,12 +31,17 @@ async function getGPUSolver(): Promise<GPUSolver | null> {
   return gpuSolver;
 }
 
-async function handleRequest(request: SolverRequest): Promise<SolverResponse> {
+async function getPuzzle(sides: string[]): Promise<{ dictionary: Dictionary; cache: PuzzleCache }> {
   const t0 = performance.now();
   const dictionary = await Dictionary.load(WORD_LIST_URL);
   const dictTime = performance.now() - t0;
 
-  const ctx = buildPuzzleContext(request.sides);
+  const key = sides.join("|").toUpperCase();
+  if (puzzleCache?.key === key) {
+    return { dictionary, cache: puzzleCache };
+  }
+
+  const ctx = buildPuzzleContext(sides);
 
   const t1 = performance.now();
   const validWords = dictionary.getValidWords(ctx);
@@ -32,6 +50,16 @@ async function handleRequest(request: SolverRequest): Promise<SolverResponse> {
   console.log(
     `[Solver] ${validWords.length} valid words (dict: ${dictTime.toFixed(1)}ms, filter: ${filterTime.toFixed(1)}ms)`,
   );
+
+  puzzleCache = { key, ctx, validWords };
+  return { dictionary, cache: puzzleCache };
+}
+
+async function handleRequest(request: SolverRequest): Promise<SolverResponse> {
+  const {
+    dictionary,
+    cache: { ctx, validWords },
+  } = await getPuzzle(request.sides);
 
   if (request.type === "solve") {
     const solver = new Solver(ctx, dictionary);
