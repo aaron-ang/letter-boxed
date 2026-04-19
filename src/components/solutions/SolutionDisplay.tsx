@@ -1,20 +1,15 @@
 import Grid from "@mui/material/Grid";
 
-type SolutionDisplayProps = {
-  solution: string[];
-  bestSolution: string[];
-  solving: boolean;
-  isSuccess: boolean;
-};
+import { useGameStore } from "../../store/gameStore";
 
 const MOST_WORDS = 5;
 
-const SolutionDisplay: React.FC<SolutionDisplayProps> = ({
-  solution,
-  bestSolution,
-  solving,
-  isSuccess,
-}) => {
+const SolutionDisplay: React.FC = () => {
+  const solution = useGameStore((s) => s.solution);
+  const bestSolution = useGameStore((s) => s.bestSolution);
+  const solving = useGameStore((s) => s.solving);
+  const isSuccess = useGameStore((s) => s.isSuccess);
+
   return (
     <>
       <Grid container>

@@ -1,51 +1,25 @@
 import { createTheme, responsiveFontSizes, ThemeProvider } from "@mui/material";
 import Box from "@mui/material/Box";
-import type { SelectChangeEvent } from "@mui/material/Select";
+import { useRef } from "react";
+
 import ControlPanel from "./components/controls/ControlPanel";
 import GameBoard from "./components/game/GameBoard";
 import MyAppBar from "./components/MyAppBar";
 import SolutionDisplay from "./components/solutions/SolutionDisplay";
 import VisualizationControls from "./components/visualization/VisualizationControls";
-import { useLetterBoxedGame } from "./hooks/useLetterBoxedGame";
-import { useSolver } from "./hooks/useSolver";
+import { getSolution } from "./solver/solverClient";
+import { groupLetters, useGameStore } from "./store/gameStore";
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export default function App() {
-  const {
-    fields,
-    setFields,
-    solution,
-    setSolution,
-    visualize,
-    setVisualize,
-    progress,
-    setProgress,
-    isSuccess,
-    setIsSuccess,
-    delay,
-    setDelay,
-    prevInput,
-    setPrevInput,
-    prevProcess,
-    setPrevProcess,
-    bestSolution,
-    setBestSolution,
-    disabledFields,
-    setDisabledFields,
-    focusFields,
-    setFocusFields,
-    inputRefs,
-    groupLetters,
-    updateFocus,
-    generateRandom,
-  } = useLetterBoxedGame();
-
-  const { solving, setSolving, getSolution, sleep } = useSolver();
+  const inputRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^a-z]/gi, "");
     const name = e.target.name;
+    useGameStore.getState().setFieldAt(name, value);
     const nextInput = inputRefs.current[Number.parseInt(name, 10) + 1];
-    setFields({ ...fields, [name]: value.toUpperCase() });
     if (nextInput != null && value !== "") {
       nextInput.querySelector("input")?.focus();
     }
@@ -63,78 +37,21 @@ export default function App() {
     location.reload(); // Only way to cancel promise chain
   };
 
-  const handleDelayChange = (event: SelectChangeEvent) => {
-    setDelay(Number.parseInt(event.target.value, 10));
-  };
-
-  const handleVizChange = () => {
-    setVisualize((prevState) => !prevState);
-  };
-
-  const handleSliderChange = (_event: Event, value: number | number[]) => {
-    const step = prevProcess[value as number];
-    const focusArr: number[] = Array(12).fill(-1);
-    const disabledArr: boolean[] = Array(12).fill(false);
-    updateFocus(step, focusArr);
-    focusArr.forEach((val, i) => {
-      if (val === -1) {
-        disabledArr[i] = true;
-      }
-    });
-    setFocusFields(focusArr);
-    setDisabledFields(disabledArr);
-    setSolution(step);
-  };
-
-  const updateBoard = async (progressArr: string[][]) => {
-    setProgress(0);
-
-    if (visualize) {
-      await processVisualization(progressArr);
-    } else {
-      const solution = progressArr[progressArr.length - 1] ?? [];
-      const focusArr: number[] = Array(12).fill(-1);
-      updateFocus(solution, focusArr);
-      setFocusFields(focusArr);
-      setSolution(solution);
-    }
-    setDisabledFields([]);
-  };
-
-  const processVisualization = async (progressArr: string[][]) => {
-    for (const state of progressArr) {
-      setSolution(state);
-      setProgress((prevState) => prevState + (1 / progressArr.length) * 100);
-      // If char in textfield is used, make it focused
-      const focusArr: number[] = Array(12).fill(-1);
-      const disabledArr: boolean[] = Array(12).fill(false);
-      updateFocus(state, focusArr);
-      // If textfield is not focused, make it disabled
-      focusArr.forEach((val, i) => {
-        if (val === -1) {
-          disabledArr[i] = true;
-        }
-      });
-      setFocusFields(focusArr);
-      setDisabledFields(disabledArr);
-      await sleep(delay);
-    }
-  };
-
   const handleSolve = async () => {
+    const store = useGameStore.getState();
     try {
-      setSolution([]);
-      setBestSolution([]);
-      const input = groupLetters(fields);
+      store.setSolution([]);
+      store.setBestSolution([]);
+      const input = groupLetters(store.fields);
       console.log(`input: ${input}`);
-      setSolving(true);
+      store.setSolving(true);
 
       let process: string[][];
       let success: boolean;
 
       // check cache
-      if (input.every((v, i) => v === prevInput[i])) {
-        process = prevProcess;
+      if (input.every((v, i) => v === store.prevInput[i])) {
+        process = store.prevProcess;
         success = true;
       } else {
         const res = await getSolution(input);
@@ -142,40 +59,60 @@ export default function App() {
         success = res.success;
       }
 
+      useGameStore.setState({
+        prevProcess: process,
+        isSuccess: success,
+        prevInput: input,
+      });
+
       await updateBoard(process);
-      setPrevProcess(process);
-      setIsSuccess(success);
-      setPrevInput(input);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       alert(message);
     } finally {
-      setSolving(false);
+      useGameStore.getState().setSolving(false);
+    }
+  };
+
+  const updateBoard = async (process: string[][]) => {
+    const store = useGameStore.getState();
+
+    if (store.visualize) {
+      for (let i = 0; i < process.length; i++) {
+        useGameStore.getState().gotoStep(i);
+        await sleep(useGameStore.getState().delay);
+      }
+      // leave disabledFields populated (grayed out unused letters)
+    } else {
+      const finalIdx = process.length - 1;
+      if (finalIdx >= 0) {
+        useGameStore.getState().gotoStep(finalIdx);
+      }
+      useGameStore.setState({ disabledFields: [] });
     }
   };
 
   const findBest = async () => {
+    const store = useGameStore.getState();
     try {
-      if (bestSolution.length === 0) {
-        console.log(`Looking for the best solution of length ${solution.length}...`);
-        setSolving(true);
-        const res = await getSolution(prevInput, solution.length);
-        setBestSolution(res.data);
-      }
+      if (store.bestSolution.length !== 0) return;
+      store.setSolving(true);
+      const res = await getSolution(store.prevInput, store.solution.length);
+      store.setBestSolution(res.data);
     } catch (err) {
       alert(err);
     } finally {
-      setSolving(false);
+      useGameStore.getState().setSolving(false);
     }
   };
 
   let theme = createTheme({
-    typography: {
-      fontFamily: "Open Sans, sans-serif",
-    },
+    typography: { fontFamily: "Open Sans, sans-serif" },
   });
   theme = responsiveFontSizes(theme);
 
+  const fields = useGameStore((s) => s.fields);
+  const prevInput = useGameStore((s) => s.prevInput);
   const fieldsMatch = Object.values(fields).join("") === prevInput.join("");
 
   return (
@@ -184,44 +121,21 @@ export default function App() {
 
       <Box sx={{ paddingTop: 10, display: "flex", flexDirection: "column", alignItems: "center" }}>
         <GameBoard
-          fields={fields}
           handleInputChange={handleInputChange}
           handleBackspace={handleBackspace}
-          focusFields={focusFields}
-          disabledFields={disabledFields}
           inputRefs={inputRefs}
-          solving={solving}
-          generateRandom={generateRandom}
         />
 
         <ControlPanel
-          solving={solving}
-          solution={solution}
-          isSuccess={isSuccess}
-          visualize={visualize}
           fieldsMatch={fieldsMatch}
           resetFields={resetFields}
           handleSolve={handleSolve}
           findBest={findBest}
         />
 
-        <VisualizationControls
-          visualize={visualize}
-          delay={delay}
-          progress={progress}
-          prevProcess={prevProcess}
-          solving={solving}
-          handleVizChange={handleVizChange}
-          handleDelayChange={handleDelayChange}
-          handleSliderChange={handleSliderChange}
-        />
+        <VisualizationControls />
 
-        <SolutionDisplay
-          solution={solution}
-          bestSolution={bestSolution}
-          solving={solving}
-          isSuccess={isSuccess}
-        />
+        <SolutionDisplay />
       </Box>
     </ThemeProvider>
   );
