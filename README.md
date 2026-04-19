@@ -9,6 +9,7 @@ Check out the visualizer at [aaron-ang.github.io/letter-boxed](https://aaron-ang
 The solver runs entirely in the browser — no server required.
 
 - **Frontend**: React + MUI, built with [Vite](https://vite.dev/)
+- **State**: [Zustand](https://zustand-demo.pmnd.rs/) store, no prop drilling
 - **Solver**: TypeScript, runs in a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API) to keep the UI responsive
 - **GPU acceleration**: [WebGPU](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API) compute shaders for `Find Best` (with CPU fallback)
 - **Testing**: [Vitest](https://vitest.dev/)
@@ -26,7 +27,8 @@ The solver runs entirely in the browser — no server required.
 
 - `Solve` finds the first valid solution with step-by-step visualization
 - `Find Best` finds the optimal solution (fewest words, then shortest total length)
-- Slider to step through the solving process
+- Slider + prev/next buttons to step through the solving process
+- Each letter's usage rendered as a numbered bubble on the assigned side of the cell (word 0 = top, 1 = left, 2 = bottom, 3 = right, 4 = top-right corner), with a color-per-word palette. Linking letters get one bubble per word they appear in
 - Customizable visualization delay
 - Random puzzle generator using [most frequent English letters](https://mathcenter.oxford.emory.edu/site/math125/englishLetterFreqs/)
 - Caches previous puzzle results to prevent recomputation
@@ -39,6 +41,7 @@ bun run dev     # start dev server
 bun run build   # production build
 bun run test    # run tests
 bun run lint    # check linting
+bun run format  # format files
 ```
 
 ## Demo video
