@@ -10,7 +10,6 @@ export type SolverResponse =
 export interface PuzzleContext {
   sides: string[];
   letters: string[];
-  // Indexed by letter char code offset (charCode - 65 for A-Z)
   letterIndex: Int8Array; // -1 if not in puzzle, else 0..11
   letterBit: Int32Array; // 0 if not in puzzle, else 1 << index
   sideOf: Int8Array; // sideOf[i] = 0..3 for letter index i; -1 unused
@@ -24,8 +23,8 @@ export interface ValidWord {
   lastLetterIdx: number;
 }
 
-function charOffset(ch: string): number {
-  return ch.charCodeAt(0) - 65; // 'A' = 0, 'Z' = 25
+export function charOffset(ch: string): number {
+  return ch.charCodeAt(0) - "A".charCodeAt(0);
 }
 
 export function getLetterIndex(ctx: PuzzleContext, ch: string): number {
@@ -47,6 +46,11 @@ export function buildPuzzleContext(sides: string[]): PuzzleContext {
       const letter = sides[sideIdx][j].toUpperCase();
       const idx = letters.length;
       const offset = charOffset(letter);
+
+      if (letterIndex[offset] !== -1) {
+        throw new Error(`duplicate letter in puzzle: ${letter}`);
+      }
+
       letters.push(letter);
       letterIndex[offset] = idx;
       letterBit[offset] = 1 << idx;

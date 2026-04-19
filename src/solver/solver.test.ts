@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import Dictionary from "./dictionary";
 import { Solver } from "./solver";
-import { buildPuzzleContext } from "./types";
+import { buildPuzzleContext, charOffset } from "./types";
 
 // Load dictionary synchronously for tests
 let dict: Dictionary;
@@ -118,8 +118,8 @@ describe("getValidWords()", () => {
     const validWords = dict.getValidWords(ctx);
     for (const w of validWords) {
       for (let i = 1; i < w.word.length; i++) {
-        const prevIdx = ctx.letterIndex[w.word.charCodeAt(i - 1) - 65];
-        const currIdx = ctx.letterIndex[w.word.charCodeAt(i) - 65];
+        const prevIdx = ctx.letterIndex[charOffset(w.word[i - 1])];
+        const currIdx = ctx.letterIndex[charOffset(w.word[i])];
         expect(ctx.sideOf[prevIdx]).not.toBe(ctx.sideOf[currIdx]);
       }
     }
