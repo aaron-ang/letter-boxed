@@ -6,10 +6,8 @@ Check out the visualizer at [aaron-ang.github.io/letter-boxed](https://aaron-ang
 
 ## Architecture
 
-The solver runs entirely in the browser — no server required.
-
 - **Frontend**: React + [shadcn/ui](https://ui.shadcn.com/) + [Tailwind v4](https://tailwindcss.com/), built with [Vite](https://vite.dev/)
-- **State**: [Zustand](https://zustand-demo.pmnd.rs/) store, no prop drilling
+- **State**: [Zustand](https://zustand-demo.pmnd.rs/) store
 - **Solver**: TypeScript, runs in a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API) to keep the UI responsive
 - **GPU acceleration**: [WebGPU](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API) compute shaders for `Find Best` (with CPU fallback)
 - **Testing**: [Vitest](https://vitest.dev/)
@@ -17,10 +15,10 @@ The solver runs entirely in the browser — no server required.
 
 ## Solver optimizations
 
-- **Bitmask letter tracking**: 12 puzzle letters mapped to a 12-bit integer. `allLettersUsed()` is a single bitwise OR + comparison instead of nested string scanning
-- **Precomputed adjacency**: `onSameSide()` reduced from linear search to array lookup via `sideOf[]`
+- **Bitmask letter tracking**: 12 puzzle letters mapped to a 12-bit integer. `allLettersUsed()` is a single bitwise OR + comparison
+- **Precomputed adjacency**: `onSameSide()` uses array lookup via `sideOf[]`
 - **Dictionary filtering**: 26K words filtered to ~300 valid words per puzzle before solving
-- **Word-level combinatorial search**: `Find Best` checks word pairs/triples using bitmask coverage instead of character-by-character backtracking
+- **Word-level combinatorial search**: `Find Best` checks word pairs/triples using bitmask coverage
 - **WebGPU multi-pass**: GPU extends word chains across up to 5 passes (1→2→3→4→5 words), checking chain constraints and coverage in parallel
 
 ## Features
