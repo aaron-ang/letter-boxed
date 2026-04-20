@@ -24,17 +24,17 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const showFindBest = solution.length > 0 && isSuccess && !visualize && fieldsMatch;
 
   return (
-    <div className="mt-6 mb-2 flex flex-row gap-2">
-      <Button variant="destructive" onClick={resetFields}>
+    <div className="mt-6 mb-2 flex flex-row gap-3">
+      <Button onClick={resetFields} className="h-10 bg-red-600 px-5 text-white hover:bg-red-700">
         Reset
       </Button>
       {showFindBest ? (
-        <Button disabled={solving} onClick={findBest}>
+        <Button disabled={solving} onClick={findBest} className="h-10 px-5">
           {solving && <LoaderCircle className="animate-spin" />}
           Find Best
         </Button>
       ) : (
-        <Button disabled={solving} onClick={handleSolve}>
+        <Button disabled={solving} onClick={handleSolve} className="h-10 px-5">
           {solving && <LoaderCircle className="animate-spin" />}
           Solve
         </Button>

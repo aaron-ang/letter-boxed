@@ -108,7 +108,7 @@ export default function App() {
   return (
     <>
       <MyAppBar />
-      <div className="flex flex-col items-center pt-10">
+      <main className="mx-auto flex max-w-lg flex-col items-center gap-4 px-4 pt-10">
         <GameBoard
           handleInputChange={handleInputChange}
           handleBackspace={handleBackspace}
@@ -125,7 +125,7 @@ export default function App() {
         <VisualizationControls />
 
         <SolutionDisplay />
-      </div>
+      </main>
     </>
   );
 }

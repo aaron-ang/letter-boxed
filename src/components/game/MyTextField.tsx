@@ -79,11 +79,11 @@ export default function MyTextField({
         pattern="[a-zA-Z]+"
         maxLength={1}
         aria-label="input"
-        className="h-14 w-16 text-center font-semibold text-base"
+        className="h-14 w-14 rounded-md text-center text-lg font-semibold"
         style={{
-          backgroundColor: bg,
-          borderColor: border,
-          borderWidth: border ? 2 : 1,
+          backgroundColor: bg ?? "white",
+          borderColor: border ?? "#4b5563",
+          borderWidth: 2,
           transition: "background-color 0.25s ease",
         }}
       />

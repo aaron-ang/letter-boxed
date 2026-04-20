@@ -43,8 +43,8 @@ const GameBoard: React.FC<GameBoardProps> = ({ handleInputChange, handleBackspac
       style={{
         gridTemplateColumns: "repeat(5, auto)",
         gridTemplateRows: "repeat(5, auto)",
-        columnGap: 24,
-        rowGap: 24,
+        columnGap: 28,
+        rowGap: 28,
       }}
     >
       {Object.entries(fields).map(([key, value], i) => {
@@ -64,13 +64,20 @@ const GameBoard: React.FC<GameBoardProps> = ({ handleInputChange, handleBackspac
         );
       })}
 
-      <div className="flex flex-col gap-3" style={{ gridRow: "2 / 5", gridColumn: "2 / 5" }}>
-        <Button variant="outline" disabled={solving} onClick={generateRandom}>
+      <div
+        className="flex flex-col items-center justify-center gap-2"
+        style={{ gridRow: "2 / 5", gridColumn: "2 / 5" }}
+      >
+        <Button
+          disabled={solving}
+          onClick={generateRandom}
+          className="h-10 w-36 bg-violet-600 text-white hover:bg-violet-700"
+        >
           Random Puzzle
         </Button>
         <Button
-          variant="outline"
           onClick={() => window.open("https://www.nytimes.com/puzzles/letter-boxed")}
+          className="h-10 w-36 bg-sky-600 text-white hover:bg-sky-700"
         >
           Visit NYT Site
         </Button>

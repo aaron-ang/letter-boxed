@@ -10,7 +10,7 @@ const SolutionDisplay: React.FC = () => {
 
   return (
     <>
-      <div className="flex flex-row justify-center">
+      <div className="mt-2 flex flex-row justify-center gap-8">
         <div className="mx-2 text-center">
           {bestSolution.length !== 0 && (
             <h3 className="font-semibold text-lg">Initial solution:</h3>
