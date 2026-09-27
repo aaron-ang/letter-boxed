@@ -6,14 +6,28 @@ const CHAIN_STRIDE = 9;
 const CHAIN_BYTES = CHAIN_STRIDE * 4;
 const WORKGROUP_SIZE = 256;
 
-interface Solution {
+export interface Solution {
   words: number[];
   totalChars: number;
 }
 
-interface ExtendResult {
+/**
+ * 1-word chains are the words themselves; the GPU passes only ever produce chains of 2+ words,
+ * so full-coverage single words must be detected up front (on the CPU).
+ */
+export function findOneWordSolutions(validWords: ValidWord[], allCoveredMask: number): Solution[] {
+  const solutions: Solution[] = [];
+  for (let i = 0; i < validWords.length; i++) {
+    if (validWords[i].coverageMask === allCoveredMask) {
+      solutions.push({ words: [i], totalChars: validWords[i].word.length });
+    }
+  }
+  return solutions;
+}
+
+interface PassResult {
   solutions: Solution[];
-  nextChains: Uint32Array;
+  nextCount: number;
 }
 
 export class GPUSolver {
@@ -46,42 +60,54 @@ export class GPUSolver {
     allCoveredMask: number,
   ): Promise<{ success: boolean; data: string[] }> {
     const n = validWords.length;
-    if (n === 0) return { success: false, data: [] };
+    if (n === 0 || numWords < 1) return { success: false, data: [] };
+
+    const oneWord = findOneWordSolutions(validWords, allCoveredMask);
+    if (oneWord.length > 0) {
+      console.log(`[GPU] Pass 0: found ${oneWord.length} 1-word solutions (CPU check)`);
+      return this.selectBest(oneWord, validWords);
+    }
 
     const pipeline = this.createPipeline();
     const wordBuffer = this.createWordBuffer(validWords);
+    const solBuf = this.emptyStorage(this.maxSolutions * CHAIN_BYTES);
+    const countsBuf = this.counterBuffer();
 
-    let chains = this.initOneWordChains(validWords);
+    // Chains stay on the GPU between passes: each pass reads one buffer and writes the other,
+    // and only the counts (plus any solutions) come back to the CPU.
+    const firstChains = this.uploadStorage(this.initOneWordChains(validWords));
+    let input = firstChains;
+    let output = this.emptyStorage(this.maxChains * CHAIN_BYTES);
+    let chainCount = n;
     const solutions: Solution[] = [];
 
-    for (let pass = 0; pass < numWords - 1; pass++) {
-      const chainCount = chains.length / CHAIN_STRIDE;
-      if (chainCount === 0) break;
-
-      const result = await this.extend(
-        pipeline,
+    for (let pass = 0; pass < numWords - 1 && chainCount > 0; pass++) {
+      const result = await this.extend(pipeline, {
         wordBuffer,
-        chains,
+        chainBuf: input,
         chainCount,
-        n,
-        allCoveredMask,
-        numWords,
-      );
+        nextBuf: output,
+        solBuf,
+        countsBuf,
+        wordCount: n,
+        targetMask: allCoveredMask,
+        maxWords: numWords,
+      });
 
       solutions.push(...result.solutions);
       if (solutions.length > 0) {
         console.log(`[GPU] Pass ${pass + 1}: found ${result.solutions.length} solutions`);
-      } else {
-        console.log(
-          `[GPU] Pass ${pass + 1}: ${result.nextChains.length / CHAIN_STRIDE} incomplete chains`,
-        );
+        break;
       }
+      console.log(`[GPU] Pass ${pass + 1}: ${result.nextCount} incomplete chains`);
 
-      if (solutions.length > 0) break;
-      chains = result.nextChains;
+      chainCount = result.nextCount;
+      const next = input === firstChains ? this.emptyStorage(this.maxChains * CHAIN_BYTES) : input;
+      input = output;
+      output = next;
     }
 
-    wordBuffer.destroy();
+    for (const buf of [wordBuffer, solBuf, countsBuf, firstChains, input, output]) buf.destroy();
     return this.selectBest(solutions, validWords);
   }
 
@@ -122,37 +148,37 @@ export class GPUSolver {
 
   private async extend(
     pipeline: GPUComputePipeline,
-    wordBuffer: GPUBuffer,
-    chains: Uint32Array,
-    chainCount: number,
-    wordCount: number,
-    targetMask: number,
-    maxWords: number,
-  ): Promise<ExtendResult> {
-    const chainBuf = this.uploadStorage(chains.subarray(0, chainCount * CHAIN_STRIDE));
+    p: {
+      wordBuffer: GPUBuffer;
+      chainBuf: GPUBuffer;
+      chainCount: number;
+      nextBuf: GPUBuffer;
+      solBuf: GPUBuffer;
+      countsBuf: GPUBuffer;
+      wordCount: number;
+      targetMask: number;
+      maxWords: number;
+    },
+  ): Promise<PassResult> {
     const uniformBuf = this.uploadUniform(
-      new Uint32Array([chainCount, wordCount, targetMask, maxWords]),
+      new Uint32Array([p.chainCount, p.wordCount, p.targetMask, p.maxWords]),
     );
-    const solBuf = this.emptyStorage(this.maxSolutions * CHAIN_BYTES);
-    const solCountBuf = this.counterBuffer();
-    const nextBuf = this.emptyStorage(this.maxChains * CHAIN_BYTES);
-    const nextCountBuf = this.counterBuffer();
+    this.device.queue.writeBuffer(p.countsBuf, 0, new Uint32Array([0, 0]));
 
     const bindGroup = this.device.createBindGroup({
       layout: pipeline.getBindGroupLayout(0),
       entries: [
-        { binding: 0, resource: { buffer: wordBuffer } },
-        { binding: 1, resource: { buffer: chainBuf } },
+        { binding: 0, resource: { buffer: p.wordBuffer } },
+        { binding: 1, resource: { buffer: p.chainBuf } },
         { binding: 2, resource: { buffer: uniformBuf } },
-        { binding: 3, resource: { buffer: solBuf } },
-        { binding: 4, resource: { buffer: solCountBuf } },
-        { binding: 5, resource: { buffer: nextBuf } },
-        { binding: 6, resource: { buffer: nextCountBuf } },
+        { binding: 3, resource: { buffer: p.solBuf } },
+        { binding: 4, resource: { buffer: p.nextBuf } },
+        { binding: 5, resource: { buffer: p.countsBuf } },
       ],
     });
 
     const maxWgPerDim = this.device.limits.maxComputeWorkgroupsPerDimension;
-    const totalWg = Math.ceil((chainCount * wordCount) / WORKGROUP_SIZE);
+    const totalWg = Math.ceil((p.chainCount * p.wordCount) / WORKGROUP_SIZE);
     const wgX = Math.min(totalWg, maxWgPerDim);
     const wgY = Math.ceil(totalWg / maxWgPerDim);
 
@@ -164,8 +190,15 @@ export class GPUSolver {
     pass.end();
     this.device.queue.submit([encoder.finish()]);
 
-    const rawSolCount = (await this.readBuffer(solCountBuf, 4))[0];
-    const rawNextCount = (await this.readBuffer(nextCountBuf, 4))[0];
+    // Each readback costs a round trip, so the counts and the whole solutions buffer
+    // come back in one copy.
+    const data = await this.readBack([
+      [p.countsBuf, 8],
+      [p.solBuf, this.maxSolutions * CHAIN_BYTES],
+    ]);
+    uniformBuf.destroy();
+
+    const [rawSolCount, rawNextCount] = data;
     const solCount = Math.min(rawSolCount, this.maxSolutions);
     const nextCount = Math.min(rawNextCount, this.maxChains);
 
@@ -179,27 +212,15 @@ export class GPUSolver {
     }
 
     const solutions: Solution[] = [];
-    if (solCount > 0) {
-      const data = await this.readBuffer(solBuf, solCount * CHAIN_STRIDE * 4);
-      for (let i = 0; i < solCount; i++) {
-        const off = i * CHAIN_STRIDE;
-        const wc = data[off + 7];
-        const wordIndices: number[] = [];
-        for (let j = 0; j < wc; j++) wordIndices.push(data[off + j]);
-        solutions.push({ words: wordIndices, totalChars: data[off + 8] });
-      }
+    for (let i = 0; i < solCount; i++) {
+      const off = 2 + i * CHAIN_STRIDE;
+      const wc = data[off + 7];
+      const wordIndices: number[] = [];
+      for (let j = 0; j < wc; j++) wordIndices.push(data[off + j]);
+      solutions.push({ words: wordIndices, totalChars: data[off + 8] });
     }
 
-    const nextChains =
-      nextCount > 0
-        ? await this.readBuffer(nextBuf, nextCount * CHAIN_STRIDE * 4)
-        : new Uint32Array(0);
-
-    for (const b of [chainBuf, uniformBuf, solBuf, solCountBuf, nextBuf, nextCountBuf]) {
-      b.destroy();
-    }
-
-    return { solutions, nextChains };
+    return { solutions, nextCount };
   }
 
   private uploadStorage(data: Uint32Array): GPUBuffer {
@@ -228,26 +249,29 @@ export class GPUSolver {
   }
 
   private counterBuffer(): GPUBuffer {
-    const buf = this.device.createBuffer({
-      size: 4,
+    return this.device.createBuffer({
+      size: 8,
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
     });
-    this.device.queue.writeBuffer(buf, 0, new Uint32Array([0]));
-    return buf;
   }
 
-  private async readBuffer(src: GPUBuffer, byteSize: number): Promise<Uint32Array> {
+  /** Copies each [buffer, byteSize] into one staging buffer and maps it once. */
+  private async readBack(parts: [GPUBuffer, number][]): Promise<Uint32Array> {
+    const total = parts.reduce((sum, [, size]) => sum + size, 0);
     const staging = this.device.createBuffer({
-      size: byteSize,
+      size: total,
       usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
     });
     const encoder = this.device.createCommandEncoder();
-    encoder.copyBufferToBuffer(src, 0, staging, 0, byteSize);
+    let offset = 0;
+    for (const [src, size] of parts) {
+      encoder.copyBufferToBuffer(src, 0, staging, offset, size);
+      offset += size;
+    }
     this.device.queue.submit([encoder.finish()]);
     await staging.mapAsync(GPUMapMode.READ);
-    const mapped = staging.getMappedRange();
-    const out = new Uint32Array(mapped.byteLength / 4);
-    out.set(new Uint32Array(mapped));
+    const out = new Uint32Array(total / 4);
+    out.set(new Uint32Array(staging.getMappedRange()));
     staging.unmap();
     staging.destroy();
     return out;

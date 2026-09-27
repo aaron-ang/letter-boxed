@@ -24,9 +24,9 @@ struct Uniforms {
 @group(0) @binding(1) var<storage, read>       chains: array<Chain>;
 @group(0) @binding(2) var<uniform>             uniforms: Uniforms;
 @group(0) @binding(3) var<storage, read_write> solutions: array<Chain>;
-@group(0) @binding(4) var<storage, read_write> solutionCount: atomic<u32>;
-@group(0) @binding(5) var<storage, read_write> nextChains: array<Chain>;
-@group(0) @binding(6) var<storage, read_write> nextChainCount: atomic<u32>;
+@group(0) @binding(4) var<storage, read_write> nextChains: array<Chain>;
+// [solution count, next chain count], read back together in one copy
+@group(0) @binding(5) var<storage, read_write> counts: array<atomic<u32>, 2>;
 
 @compute @workgroup_size(256)
 fn extendChains(
@@ -61,10 +61,10 @@ fn extendChains(
   nc.totalChars = chain.totalChars + newWord.charCount;
 
   if (nc.coverageMask == uniforms.targetMask) {
-    let slot = atomicAdd(&solutionCount, 1u);
+    let slot = atomicAdd(&counts[0], 1u);
     if (slot < arrayLength(&solutions)) { solutions[slot] = nc; }
   } else if (nc.wordCount < uniforms.maxWords) {
-    let slot = atomicAdd(&nextChainCount, 1u);
+    let slot = atomicAdd(&counts[1], 1u);
     if (slot < arrayLength(&nextChains)) { nextChains[slot] = nc; }
   }
 }
