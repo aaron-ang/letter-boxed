@@ -2,8 +2,24 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import Dictionary from "./dictionary";
-import { Solver } from "./solver";
-import { buildPuzzleContext, charOffset } from "./types";
+import { findOneWordSolutions } from "./gpu/gpuSolver";
+import { isBetterSolution, Solver } from "./solver";
+import { buildPuzzleContext, charOffset, type ValidWord } from "./types";
+
+// Synthetic 3-letter puzzle (A=0, B=1, C=2) for testing ranking logic in isolation.
+const TINY_MASK = 0b111;
+const tinyWord = (word: string, coverageMask: number, first: number, last: number): ValidWord => ({
+  word,
+  coverageMask,
+  firstLetterIdx: first,
+  lastLetterIdx: last,
+});
+// 1-word solution (5 letters) vs. shorter 2-word chain AB -> BC (4 letters total).
+const TINY_WORDS: ValidWord[] = [
+  tinyWord("ABCAB", 0b111, 0, 1),
+  tinyWord("AB", 0b011, 0, 1),
+  tinyWord("BC", 0b110, 1, 2),
+];
 
 // Load dictionary synchronously for tests
 let dict: Dictionary;
@@ -86,6 +102,48 @@ describe("findBestCPU()", () => {
     expect(result.success).toBe(false);
     expect(result.data).toEqual([]);
   });
+
+  it("prefers fewer words over fewer total letters", () => {
+    for (const numWords of [2, 3]) {
+      const result = Solver.findBestCPU(TINY_WORDS, numWords, TINY_MASK);
+      expect(result).toEqual({ success: true, data: ["ABCAB"] });
+    }
+  });
+});
+
+describe("findOneWordSolutions() (GPU pre-pass)", () => {
+  it("detects words that cover every letter on their own", () => {
+    const sols = findOneWordSolutions(TINY_WORDS, TINY_MASK);
+    expect(sols).toEqual([{ words: [0], totalChars: 5 }]);
+  });
+
+  it("returns nothing when no single word covers the puzzle", () => {
+    const ctx = buildPuzzleContext(["SRG", "MDH", "IOL", "ENP"]);
+    const validWords = dict.getValidWords(ctx);
+    expect(findOneWordSolutions(validWords, ctx.allCoveredMask)).toEqual([]);
+  });
+});
+
+describe("buildPuzzleContext()", () => {
+  it("accepts 4 sides of 3 letters", () => {
+    const ctx = buildPuzzleContext(["srg", "MDH", "IOL", "ENP"]);
+    expect(ctx.letters).toHaveLength(12);
+    expect(ctx.allCoveredMask).toBe(0xfff);
+  });
+
+  it.each([
+    [["SRG", "MDH", "IOL"]],
+    [["SRG", "MDH", "IOL", "ENP", "ABC"]],
+    [["SRG", "MDH", "IOL", "EN"]],
+    [["SRG", "MDH", "IOL", "ENPA"]],
+    [["SRG", "MDH", "IOL", "EN1"]],
+  ])("rejects malformed input %j", (sides) => {
+    expect(() => buildPuzzleContext(sides)).toThrow(/4 sides of 3 letters/);
+  });
+
+  it("rejects duplicate letters", () => {
+    expect(() => buildPuzzleContext(["SRG", "MDH", "IOL", "ENS"])).toThrow(/duplicate/);
+  });
 });
 
 describe("findBestBacktracking()", () => {
@@ -95,6 +153,14 @@ describe("findBestBacktracking()", () => {
     const result = solver.findBestBacktracking(2);
     expect(result.success).toBe(true);
     expect(result.data).toEqual(["MORPHS", "SINGLED"]);
+  });
+
+  it("ranks fewer words above fewer total letters", () => {
+    const isBetter = isBetterSolution;
+    expect(isBetter(["ABCAB"], ["AB", "BC"])).toBe(true);
+    expect(isBetter(["AB", "BC"], ["ABCAB"])).toBe(false);
+    expect(isBetter(["AB", "BC"], ["ABC", "CD"])).toBe(true);
+    expect(isBetter(["AB", "BD"], ["AB", "BC"])).toBe(false);
   });
 });
 

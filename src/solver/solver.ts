@@ -1,7 +1,22 @@
 import type Dictionary from "./dictionary";
-import { getLetterBit, getLetterIndex, type PuzzleContext, type ValidWord } from "./types";
+import {
+  getLetterBit,
+  getLetterIndex,
+  LETTER_COUNT,
+  type PuzzleContext,
+  type ValidWord,
+} from "./types";
 
 const MOST_WORDS = 5;
+
+/** Find Best ranking: fewest words, then fewest total letters, then alphabetical. */
+export function isBetterSolution(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return a.length < b.length;
+  const aStr = a.join("");
+  const bStr = b.join("");
+  if (aStr.length !== bStr.length) return aStr.length < bStr.length;
+  return aStr.localeCompare(bStr) < 0;
+}
 
 export class Solver {
   private ctx: PuzzleContext;
@@ -129,46 +144,33 @@ export class Solver {
     allCoveredMask: number,
   ): { success: boolean; data: string[] } {
     let bestSolution: string[] | null = null;
-    let bestLen = Infinity;
 
-    const isBetter = (words: string[]): boolean => {
-      const totalLen = words.reduce((sum, w) => sum + w.length, 0);
-      if (totalLen < bestLen) return true;
-      if (totalLen === bestLen && bestSolution) {
-        return words.join("").localeCompare(bestSolution.join("")) < 0;
-      }
-      return false;
-    };
+    const isBetter = (words: string[]): boolean =>
+      !bestSolution || isBetterSolution(words, bestSolution);
 
-    const chainIndex = new Map<number, ValidWord[]>();
-    for (const w of validWords) {
-      const list = chainIndex.get(w.firstLetterIdx) ?? [];
-      list.push(w);
-      chainIndex.set(w.firstLetterIdx, list);
-    }
+    // chainIndex[i] lists the valid words that start with puzzle letter i.
+    const chainIndex: ValidWord[][] = Array.from({ length: LETTER_COUNT }, () => []);
+    for (const w of validWords) chainIndex[w.firstLetterIdx].push(w);
 
     if (numWords >= 1) {
       for (const a of validWords) {
         if (a.coverageMask === allCoveredMask) {
-          if (!bestSolution || isBetter([a.word])) {
+          if (isBetter([a.word])) {
             bestSolution = [a.word];
-            bestLen = a.word.length;
           }
         }
       }
     }
 
-    if (numWords >= 2) {
+    if (numWords >= 2 && !bestSolution) {
       for (const a of validWords) {
-        const bCandidates = chainIndex.get(a.lastLetterIdx);
-        if (!bCandidates) continue;
+        const bCandidates = chainIndex[a.lastLetterIdx];
         for (const b of bCandidates) {
           if (a.word === b.word) continue;
           if ((a.coverageMask | b.coverageMask) === allCoveredMask) {
             const words = [a.word, b.word];
-            if (!bestSolution || isBetter(words)) {
+            if (isBetter(words)) {
               bestSolution = words;
-              bestLen = a.word.length + b.word.length;
             }
           }
         }
@@ -177,28 +179,24 @@ export class Solver {
 
     if (numWords >= 3 && !bestSolution) {
       for (const a of validWords) {
-        const bCandidates = chainIndex.get(a.lastLetterIdx);
-        if (!bCandidates) continue;
+        const bCandidates = chainIndex[a.lastLetterIdx];
         for (const b of bCandidates) {
           if (a.word === b.word) continue;
           const abMask = a.coverageMask | b.coverageMask;
           if (abMask === allCoveredMask) {
             const words = [a.word, b.word];
-            if (!bestSolution || isBetter(words)) {
+            if (isBetter(words)) {
               bestSolution = words;
-              bestLen = a.word.length + b.word.length;
             }
             continue;
           }
-          const cCandidates = chainIndex.get(b.lastLetterIdx);
-          if (!cCandidates) continue;
+          const cCandidates = chainIndex[b.lastLetterIdx];
           for (const c of cCandidates) {
             if (c.word === a.word || c.word === b.word) continue;
             if ((abMask | c.coverageMask) === allCoveredMask) {
               const words = [a.word, b.word, c.word];
-              if (!bestSolution || isBetter(words)) {
+              if (isBetter(words)) {
                 bestSolution = words;
-                bestLen = a.word.length + b.word.length + c.word.length;
               }
             }
           }
@@ -236,7 +234,7 @@ export class Solver {
       this.words[wordNum].length >= 3
     ) {
       const currentSolution = this.words.filter((w) => w !== "");
-      if (!this.bestSolution || this.isBetterSolution(currentSolution, this.bestSolution)) {
+      if (!this.bestSolution || isBetterSolution(currentSolution, this.bestSolution)) {
         this.bestSolution = [...currentSolution];
       }
       return 1;
@@ -258,13 +256,5 @@ export class Solver {
       }
     }
     return numSolutions;
-  }
-
-  private isBetterSolution(a: string[], b: string[]): boolean {
-    const aStr = a.join("");
-    const bStr = b.join("");
-    return (
-      aStr.length < bStr.length || (aStr.length === bStr.length && aStr.localeCompare(bStr) < 0)
-    );
   }
 }

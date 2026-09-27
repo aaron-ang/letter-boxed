@@ -11,7 +11,7 @@ export interface PuzzleContext {
   sides: string[];
   letters: string[];
   letterIndex: Int8Array; // -1 if not in puzzle, else 0..11
-  letterBit: Int32Array; // 0 if not in puzzle, else 1 << index
+  letterBit: Uint16Array; // 0 if not in puzzle, else 1 << index (at most 1 << 11)
   sideOf: Int8Array; // sideOf[i] = 0..3 for letter index i; -1 unused
   allCoveredMask: number;
 }
@@ -35,10 +35,25 @@ export function getLetterBit(ctx: PuzzleContext, ch: string): number {
   return ctx.letterBit[charOffset(ch)];
 }
 
+const SIDE_COUNT = 4;
+const LETTERS_PER_SIDE = 3;
+export const LETTER_COUNT = SIDE_COUNT * LETTERS_PER_SIDE;
+const SIDE_PATTERN = new RegExp(`^[A-Za-z]{${LETTERS_PER_SIDE}}$`);
+
 export function buildPuzzleContext(sides: string[]): PuzzleContext {
+  if (
+    !Array.isArray(sides) ||
+    sides.length !== SIDE_COUNT ||
+    !sides.every((s) => typeof s === "string" && SIDE_PATTERN.test(s))
+  ) {
+    throw new Error(
+      `puzzle must be ${SIDE_COUNT} sides of ${LETTERS_PER_SIDE} letters (A-Z), got ${JSON.stringify(sides)}`,
+    );
+  }
+
   const letters: string[] = [];
   const letterIndex = new Int8Array(26).fill(-1);
-  const letterBit = new Int32Array(26).fill(0);
+  const letterBit = new Uint16Array(26);
   const sideOf = new Int8Array(12).fill(-1);
 
   for (let sideIdx = 0; sideIdx < sides.length; sideIdx++) {
