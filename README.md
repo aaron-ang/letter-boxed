@@ -17,7 +17,7 @@ Check out the visualizer at [aaron-ang.github.io/letter-boxed](https://aaron-ang
 
 - **Bitmask letter tracking**: 12 puzzle letters mapped to a 12-bit integer. `allLettersUsed()` is a single bitwise OR + comparison
 - **Precomputed adjacency**: `onSameSide()` uses array lookup via `sideOf[]`
-- **Dictionary filtering**: 26K words filtered to ~300 valid words per puzzle before solving
+- **Dictionary filtering**: 26K words filtered to ~500–600 valid words per puzzle before solving
 - **Word-level combinatorial search**: `Find Best` checks word pairs/triples using bitmask coverage
 - **WebGPU multi-pass**: GPU extends word chains across up to 5 passes (1→2→3→4→5 words), checking chain constraints and coverage in parallel
 
