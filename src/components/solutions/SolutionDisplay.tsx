@@ -10,7 +10,7 @@ const SolutionDisplay: React.FC = () => {
 
   return (
     <>
-      <div className="mt-2 flex flex-row justify-center gap-8">
+      <div className="flex min-h-36 flex-row justify-center gap-8">
         <div className="mx-2 text-center">
           {bestSolution.length !== 0 && (
             <h3 className="font-semibold text-lg">Initial solution:</h3>
@@ -31,7 +31,7 @@ const SolutionDisplay: React.FC = () => {
       </div>
 
       {!solving && !isSuccess && (
-        <h2 className="mt-2 font-semibold text-xl">
+        <h2 className="text-center font-semibold text-base">
           No solution found using up to {MOST_WORDS} words
         </h2>
       )}

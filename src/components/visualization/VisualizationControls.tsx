@@ -33,8 +33,8 @@ const VisualizationControls: React.FC = () => {
   const sliderValue = [Math.min(displayed, Math.max(steps - 1, 0))];
 
   return (
-    <div className="mt-4 flex w-full max-w-lg flex-col items-center gap-6">
-      <div className="flex flex-row items-center gap-8">
+    <div className="flex w-full flex-col items-center gap-3">
+      <div className="flex flex-row items-center gap-6">
         <div className="flex items-center gap-2">
           <Checkbox
             id="visualize-checkbox"

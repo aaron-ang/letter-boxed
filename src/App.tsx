@@ -106,26 +106,28 @@ export default function App() {
   const fieldsMatch = Object.values(fields).join("") === prevInput.join("");
 
   return (
-    <>
+    <div className="flex min-h-dvh flex-col">
       <MyAppBar />
-      <main className="mx-auto flex max-w-lg flex-col items-center gap-4 px-4 pt-10">
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-center gap-6 px-4 py-8 lg:flex-row lg:justify-center lg:gap-12">
         <GameBoard
           handleInputChange={handleInputChange}
           handleBackspace={handleBackspace}
           inputRefs={inputRefs}
         />
 
-        <ControlPanel
-          fieldsMatch={fieldsMatch}
-          resetFields={resetFields}
-          handleSolve={handleSolve}
-          findBest={findBest}
-        />
+        <section className="flex w-full max-w-sm flex-col items-center gap-4 lg:w-80">
+          <ControlPanel
+            fieldsMatch={fieldsMatch}
+            resetFields={resetFields}
+            handleSolve={handleSolve}
+            findBest={findBest}
+          />
 
-        <VisualizationControls />
+          <VisualizationControls />
 
-        <SolutionDisplay />
+          <SolutionDisplay />
+        </section>
       </main>
-    </>
+    </div>
   );
 }
