@@ -1,6 +1,7 @@
 import type React from "react";
 
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { wordBackground, wordBorder } from "@/store/colors";
 import type { LetterUsage } from "@/store/gameStore";
 
@@ -16,30 +17,28 @@ type TextFieldProps = {
 
 type Anchor = "top" | "right" | "bottom" | "left" | "top-right";
 const WORD_ANCHOR: Anchor[] = ["top", "left", "bottom", "right", "top-right"];
-const BUBBLE_SIZE = 20;
-const BUBBLE_GAP = 2;
+// Bubble size and gap are Tailwind spacing tokens, set as CSS vars on the cell wrapper
+const STEP = "(var(--bubble) + var(--bubble-gap))";
+const EDGE_OFFSET = "calc(var(--bubble) / -2 - var(--bubble-gap))";
 
 function bubbleStyle(
   anchor: Anchor,
   indexInGroup: number,
   groupTotal: number,
 ): React.CSSProperties {
-  const step = BUBBLE_SIZE + BUBBLE_GAP;
-  const centerOffset = (indexInGroup - (groupTotal - 1) / 2) * step;
-  const axisAlign = `calc(50% - ${BUBBLE_SIZE / 2}px + ${centerOffset}px)`;
-  const perpOff = -BUBBLE_SIZE / 2 - 2;
-  const cornerOff = -BUBBLE_SIZE / 2 - 2;
+  const centerOffset = indexInGroup - (groupTotal - 1) / 2;
+  const axisAlign = `calc(50% - var(--bubble) / 2 + ${centerOffset} * ${STEP})`;
   switch (anchor) {
     case "top":
-      return { top: perpOff, left: axisAlign };
+      return { top: EDGE_OFFSET, left: axisAlign };
     case "right":
-      return { right: perpOff, top: axisAlign };
+      return { right: EDGE_OFFSET, top: axisAlign };
     case "bottom":
-      return { bottom: perpOff, left: axisAlign };
+      return { bottom: EDGE_OFFSET, left: axisAlign };
     case "left":
-      return { left: perpOff, top: axisAlign };
+      return { left: EDGE_OFFSET, top: axisAlign };
     case "top-right":
-      return { top: cornerOff + indexInGroup * step, right: cornerOff };
+      return { top: `calc(${EDGE_OFFSET} + ${indexInGroup} * ${STEP})`, right: EDGE_OFFSET };
   }
 }
 
@@ -65,7 +64,12 @@ export default function MyTextField({
   }
 
   return (
-    <div className="relative" style={{ zIndex: usages.length > 0 ? 2 : 1 }}>
+    <div
+      className={cn(
+        "relative [--bubble-gap:--spacing(0.5)] [--bubble:--spacing(5)]",
+        usages.length > 0 ? "z-2" : "z-1",
+      )}
+    >
       <Input
         name={idx}
         ref={(el) => {
@@ -79,27 +83,17 @@ export default function MyTextField({
         pattern="[a-zA-Z]+"
         maxLength={1}
         aria-label="input"
-        className="h-14 w-14 rounded-md text-center text-lg font-semibold"
-        style={{
-          backgroundColor: bg ?? "white",
-          borderColor: border ?? "#4b5563",
-          borderWidth: 2,
-          transition: "background-color 0.25s ease",
-        }}
+        className="size-(--cell) rounded-full border-2 border-ink bg-card text-center font-semibold text-ink text-lg transition-colors lg:text-xl duration-300 disabled:bg-card disabled:opacity-100"
+        style={bg ? { backgroundColor: bg, borderColor: border } : undefined}
       />
       {[...byWord.entries()].map(([word, group]) => {
         const anchor = WORD_ANCHOR[word % WORD_ANCHOR.length];
         return group.map((u, i) => (
           <div
             key={`${u.word}-${u.position}`}
-            className="pointer-events-none absolute flex items-center justify-center rounded-full font-bold text-white"
+            className="pointer-events-none absolute z-1 flex size-(--bubble) items-center justify-center rounded-full font-bold text-white text-xs shadow-sm"
             style={{
-              width: BUBBLE_SIZE,
-              height: BUBBLE_SIZE,
               backgroundColor: wordBorder(u.word),
-              fontSize: 11,
-              boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-              zIndex: 1,
               ...bubbleStyle(anchor, i, group.length),
             }}
           >

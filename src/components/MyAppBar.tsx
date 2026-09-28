@@ -9,25 +9,20 @@ const GithubIcon = () => (
 
 const MyAppBar = () => {
   return (
-    <header className="sticky top-0 z-40 bg-slate-900 text-white shadow">
+    <header className="sticky top-0 z-40 border-ink/15 border-b bg-card text-ink">
       <div className="flex h-14 items-center gap-2 px-4">
         <Button
           variant="ghost"
           size="icon"
           aria-label="GitHub"
-          className="text-white hover:bg-white/10 hover:text-white"
           onClick={() => {
             window.location.href = "https://github.com/aaron-ang/letter-boxed";
           }}
         >
           <GithubIcon />
         </Button>
-        <h1 className="flex-1 text-lg">Letter Boxed</h1>
-        <Button
-          variant="ghost"
-          className="text-white hover:bg-white/10 hover:text-white"
-          onClick={() => window.open("https://forms.gle/fVdX9G4wSNjPkMTA7")}
-        >
+        <h1 className="flex-1 font-bold text-lg">Letter Boxed</h1>
+        <Button variant="ghost" onClick={() => window.open("https://forms.gle/fVdX9G4wSNjPkMTA7")}>
           Feedback
         </Button>
       </div>

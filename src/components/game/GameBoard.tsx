@@ -10,7 +10,8 @@ type GameBoardProps = {
   inputRefs: React.RefObject<Array<HTMLInputElement | null>>;
 };
 
-// Grid position per field index (row, col) — 5x5 grid, corners empty
+// Grid position per field index (row, col) — 5x5 grid, corners empty.
+// A uniform gap puts letters at the quarter points of each side, like NYT's board.
 // 0-2: top row (row 1)
 // 3-5: left col (col 1)
 // 6-8: right col (col 5)
@@ -38,15 +39,10 @@ const GameBoard: React.FC<GameBoardProps> = ({ handleInputChange, handleBackspac
   const generateRandom = useGameStore((s) => s.generateRandom);
 
   return (
-    <div
-      className="grid items-center justify-items-center"
-      style={{
-        gridTemplateColumns: "repeat(5, auto)",
-        gridTemplateRows: "repeat(5, auto)",
-        columnGap: 28,
-        rowGap: 28,
-      }}
-    >
+    <div className="relative grid grid-cols-[repeat(5,auto)] grid-rows-[repeat(5,auto)] items-center justify-items-center gap-4 [--cell:--spacing(14)] sm:gap-7 lg:gap-8 lg:[--cell:--spacing(16)]">
+      {/* NYT-style box: edges run through the letter centers (inset = half a cell) */}
+      <div className="absolute inset-[calc(var(--cell)/2)] border-2 border-ink bg-card" />
+
       {Object.entries(fields).map(([key, value], i) => {
         const [row, col] = POS[i];
         return (
@@ -64,20 +60,19 @@ const GameBoard: React.FC<GameBoardProps> = ({ handleInputChange, handleBackspac
         );
       })}
 
-      <div
-        className="flex flex-col items-center justify-center gap-2"
-        style={{ gridRow: "2 / 5", gridColumn: "2 / 5" }}
-      >
+      <div className="relative col-start-2 col-end-5 row-start-2 row-end-5 flex flex-col items-center justify-center gap-6">
         <Button
+          variant="outline"
           disabled={solving}
           onClick={generateRandom}
-          className="h-10 w-36 bg-violet-600 text-white hover:bg-violet-700"
+          className="h-10 w-36 rounded-full bg-card"
         >
           Random Puzzle
         </Button>
         <Button
+          variant="outline"
           onClick={() => window.open("https://www.nytimes.com/puzzles/letter-boxed")}
-          className="h-10 w-36 bg-sky-600 text-white hover:bg-sky-700"
+          className="h-10 w-36 rounded-full bg-card"
         >
           Visit NYT Site
         </Button>
