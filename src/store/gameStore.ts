@@ -1,7 +1,11 @@
 import { create } from "zustand";
 
+import { LETTER_COUNT, LETTERS_PER_SIDE, SIDE_COUNT } from "@/solver/types";
+
 const COMMON_CHARS = "EARIOTNSLCUDPMHGB"; // Source: https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
-const FIELD_COUNT = 12;
+const FIELD_COUNT = LETTER_COUNT;
+export const DELAY_OPTIONS_MS = [1, 5, 50, 100] as const;
+export const DEFAULT_DELAY_MS: (typeof DELAY_OPTIONS_MS)[number] = 5;
 
 function emptyFields(): Record<number, string> {
   return Object.fromEntries(Array.from({ length: FIELD_COUNT }, (_, i) => [i, ""]));
@@ -10,7 +14,9 @@ function emptyFields(): Record<number, string> {
 export function groupLetters(fields: Record<number, string>): string[] {
   const arr = Object.values(fields);
   if (arr.some((v) => v === "")) throw new Error("Please fill out all fields");
-  return [0, 3, 6, 9].map((start) => arr.slice(start, start + 3).join(""));
+  return Array.from({ length: SIDE_COUNT }, (_, side) =>
+    arr.slice(side * LETTERS_PER_SIDE, (side + 1) * LETTERS_PER_SIDE).join(""),
+  );
 }
 
 export interface LetterUsage {
@@ -69,7 +75,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   solution: [],
   visualize: false,
   isSuccess: true,
-  delay: 5,
+  delay: DEFAULT_DELAY_MS,
   solving: false,
   prevInput: [],
   prevProcess: [],

@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { useGameStore } from "@/store/gameStore";
+import { DELAY_OPTIONS_MS, useGameStore } from "@/store/gameStore";
 
 const VisualizationControls: React.FC = () => {
   const visualize = useGameStore((s) => s.visualize);
@@ -59,7 +59,7 @@ const VisualizationControls: React.FC = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {[1, 5, 50, 100].map((n) => (
+              {DELAY_OPTIONS_MS.map((n) => (
                 <SelectItem key={n} value={n.toString()}>
                   {n}
                 </SelectItem>

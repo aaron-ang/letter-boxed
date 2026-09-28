@@ -35,9 +35,11 @@ export function getLetterBit(ctx: PuzzleContext, ch: string): number {
   return ctx.letterBit[charOffset(ch)];
 }
 
-const SIDE_COUNT = 4;
-const LETTERS_PER_SIDE = 3;
+export const SIDE_COUNT = 4;
+export const LETTERS_PER_SIDE = 3;
 export const LETTER_COUNT = SIDE_COUNT * LETTERS_PER_SIDE;
+/** Longest solution the solver searches for. */
+export const MOST_WORDS = 5;
 const SIDE_PATTERN = new RegExp(`^[A-Za-z]{${LETTERS_PER_SIDE}}$`);
 
 export function buildPuzzleContext(sides: string[]): PuzzleContext {

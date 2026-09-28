@@ -1,6 +1,5 @@
+import { MOST_WORDS } from "@/solver/types";
 import { useGameStore } from "@/store/gameStore";
-
-const MOST_WORDS = 5;
 
 const SolutionDisplay: React.FC = () => {
   const solution = useGameStore((s) => s.solution);
