@@ -3,11 +3,10 @@ import {
   getLetterBit,
   getLetterIndex,
   LETTER_COUNT,
+  MOST_WORDS,
   type PuzzleContext,
   type ValidWord,
 } from "./types";
-
-const MOST_WORDS = 5;
 
 /** Find Best ranking: fewest words, then fewest total letters, then alphabetical. */
 export function isBetterSolution(a: string[], b: string[]): boolean {
@@ -24,7 +23,6 @@ export class Solver {
   private words: string[];
   private wordCoverage: number[];
   private solvingProcess: string[][];
-  private bestSolution: string[] | null;
 
   constructor(ctx: PuzzleContext, dictionary: Dictionary) {
     this.ctx = ctx;
@@ -32,7 +30,6 @@ export class Solver {
     this.words = Array.from({ length: MOST_WORDS }, () => "");
     this.wordCoverage = new Array(MOST_WORDS).fill(0);
     this.solvingProcess = [];
-    this.bestSolution = null;
   }
 
   private allLettersUsed(): boolean {
@@ -138,123 +135,76 @@ export class Solver {
     return { success: false, data: this.solvingProcess };
   }
 
+  /**
+   * Find Best on the CPU, searching whole words instead of letters. Depth d
+   * only builds chains of exactly d words, so the first depth that finds any
+   * solution has the fewest words, and all of its solutions are ranked.
+   */
   static findBestCPU(
     validWords: ValidWord[],
     numWords: number,
     allCoveredMask: number,
   ): { success: boolean; data: string[] } {
+    const maxDepth = Math.min(numWords, MOST_WORDS);
     let bestSolution: string[] | null = null;
 
-    const isBetter = (words: string[]): boolean =>
-      !bestSolution || isBetterSolution(words, bestSolution);
+    // chainIndex[i] lists the valid words (by index) that start with puzzle letter i.
+    const chainIndex: number[][] = Array.from({ length: LETTER_COUNT }, () => []);
+    for (let i = 0; i < validWords.length; i++) chainIndex[validWords[i].firstLetterIdx].push(i);
 
-    // chainIndex[i] lists the valid words that start with puzzle letter i.
-    const chainIndex: ValidWord[][] = Array.from({ length: LETTER_COUNT }, () => []);
-    for (const w of validWords) chainIndex[w.firstLetterIdx].push(w);
+    // dead[state] = 1 once we know no `left` more words can finish the puzzle from
+    // (last letter, covered letters). The search may repeat words so that this
+    // doesn't depend on the path; only chains of distinct words count as solutions.
+    const masks = allCoveredMask + 1;
+    const dead = new Uint8Array(LETTER_COUNT * masks * (maxDepth + 1));
+    const chain: number[] = [];
 
-    if (numWords >= 1) {
-      for (const a of validWords) {
-        if (a.coverageMask === allCoveredMask) {
-          if (isBetter([a.word])) {
-            bestSolution = [a.word];
+    const record = (): void => {
+      if (new Set(chain).size !== chain.length) return;
+      const words = chain.map((i) => validWords[i].word);
+      if (!bestSolution || isBetterSolution(words, bestSolution)) bestSolution = words;
+    };
+
+    // Returns whether some chain of `left` more words covers every letter.
+    const extend = (lastIdx: number, covered: number, left: number): boolean => {
+      const state = (lastIdx * masks + covered) * (maxDepth + 1) + left;
+      if (dead[state]) return false;
+
+      let found = false;
+      for (const i of chainIndex[lastIdx]) {
+        const w = validWords[i];
+        const mask = covered | w.coverageMask;
+        chain.push(i);
+        if (left === 1) {
+          if (mask === allCoveredMask) {
+            found = true;
+            record();
           }
+        } else if (mask !== allCoveredMask && extend(w.lastLetterIdx, mask, left - 1)) {
+          found = true;
         }
+        chain.pop();
       }
-    }
+      if (!found) dead[state] = 1;
+      return found;
+    };
 
-    if (numWords >= 2 && !bestSolution) {
-      for (const a of validWords) {
-        const bCandidates = chainIndex[a.lastLetterIdx];
-        for (const b of bCandidates) {
-          if (a.word === b.word) continue;
-          if ((a.coverageMask | b.coverageMask) === allCoveredMask) {
-            const words = [a.word, b.word];
-            if (isBetter(words)) {
-              bestSolution = words;
-            }
-          }
+    for (let depth = 1; depth <= maxDepth && !bestSolution; depth++) {
+      for (let i = 0; i < validWords.length; i++) {
+        const w = validWords[i];
+        chain.push(i);
+        if (depth === 1) {
+          if (w.coverageMask === allCoveredMask) record();
+        } else if (w.coverageMask !== allCoveredMask) {
+          extend(w.lastLetterIdx, w.coverageMask, depth - 1);
         }
+        chain.pop();
       }
-    }
-
-    if (numWords >= 3 && !bestSolution) {
-      for (const a of validWords) {
-        const bCandidates = chainIndex[a.lastLetterIdx];
-        for (const b of bCandidates) {
-          if (a.word === b.word) continue;
-          const abMask = a.coverageMask | b.coverageMask;
-          if (abMask === allCoveredMask) {
-            const words = [a.word, b.word];
-            if (isBetter(words)) {
-              bestSolution = words;
-            }
-            continue;
-          }
-          const cCandidates = chainIndex[b.lastLetterIdx];
-          for (const c of cCandidates) {
-            if (c.word === a.word || c.word === b.word) continue;
-            if ((abMask | c.coverageMask) === allCoveredMask) {
-              const words = [a.word, b.word, c.word];
-              if (isBetter(words)) {
-                bestSolution = words;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    if (numWords >= 4 && !bestSolution) {
-      return { success: false, data: [] };
     }
 
     return {
       success: bestSolution !== null,
       data: bestSolution ?? [],
     };
-  }
-
-  findBestBacktracking(numWords: number): { success: boolean; data: string[] } {
-    this.bestSolution = null;
-    this.words = Array.from({ length: MOST_WORDS }, () => "");
-    this.wordCoverage = new Array(MOST_WORDS).fill(0);
-    this.solveRBFull(0, 0, numWords);
-    return {
-      success: this.bestSolution !== null,
-      data: this.bestSolution ?? [],
-    };
-  }
-
-  private solveRBFull(wordNum: number, charNum: number, maxWords: number): number {
-    let numSolutions = 0;
-
-    if (
-      this.allLettersUsed() &&
-      this.dictionary.hasFullWord(this.words[wordNum]) &&
-      this.words[wordNum].length >= 3
-    ) {
-      const currentSolution = this.words.filter((w) => w !== "");
-      if (!this.bestSolution || isBetterSolution(currentSolution, this.bestSolution)) {
-        this.bestSolution = [...currentSolution];
-      }
-      return 1;
-    }
-
-    if (wordNum >= maxWords) return 0;
-
-    for (const currLetter of this.ctx.letters) {
-      if (this.isValid(currLetter, wordNum, charNum)) {
-        this.addLetter(currLetter, wordNum);
-        numSolutions += this.solveRBFull(wordNum, charNum + 1, maxWords);
-
-        const currWord = this.words[wordNum];
-        if (currWord.length >= 3 && this.dictionary.hasFullWord(currWord)) {
-          numSolutions += this.solveRBFull(wordNum + 1, 0, maxWords);
-        }
-
-        this.removeLetter(wordNum);
-      }
-    }
-    return numSolutions;
   }
 }

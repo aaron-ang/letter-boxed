@@ -146,21 +146,39 @@ describe("buildPuzzleContext()", () => {
   });
 });
 
-describe("findBestBacktracking()", () => {
-  it("finds best 2-word solution via backtracking", () => {
-    const ctx = buildPuzzleContext(["SRG", "MDH", "IOL", "ENP"]);
-    const solver = new Solver(ctx, dict);
-    const result = solver.findBestBacktracking(2);
-    expect(result.success).toBe(true);
-    expect(result.data).toEqual(["MORPHS", "SINGLED"]);
+describe("findBestCPU() beyond two words", () => {
+  it.each([
+    [["DCE", "AUB", "HMW", "RNF"], 3, ["CHAMBER", "REFUND", "DAWN"]],
+    [["HOP", "AGL", "UBI", "CDV"], 4, ["BAD", "DIP", "PLOUGH", "HAVOC"]],
+    [["TNV", "EMY", "JPB", "RID"], 5, ["JIM", "MIND", "DEBT", "TYPE", "EVER"]],
+  ])("finds the best solution for %j within %i words", (sides, numWords, expected) => {
+    const ctx = buildPuzzleContext(sides);
+    const validWords = dict.getValidWords(ctx);
+    const result = Solver.findBestCPU(validWords, numWords, ctx.allCoveredMask);
+    expect(result).toEqual({ success: true, data: expected });
   });
 
+  it("stops at the fewest words even when more are allowed", () => {
+    const ctx = buildPuzzleContext(["DCE", "AUB", "HMW", "RNF"]);
+    const validWords = dict.getValidWords(ctx);
+    const result = Solver.findBestCPU(validWords, 5, ctx.allCoveredMask);
+    expect(result.data).toEqual(["CHAMBER", "REFUND", "DAWN"]);
+  });
+
+  it("reports no solution within five words", () => {
+    const ctx = buildPuzzleContext(["ABC", "DEF", "GHI", "JKL"]);
+    const validWords = dict.getValidWords(ctx);
+    const result = Solver.findBestCPU(validWords, 5, ctx.allCoveredMask);
+    expect(result).toEqual({ success: false, data: [] });
+  });
+});
+
+describe("isBetterSolution()", () => {
   it("ranks fewer words above fewer total letters", () => {
-    const isBetter = isBetterSolution;
-    expect(isBetter(["ABCAB"], ["AB", "BC"])).toBe(true);
-    expect(isBetter(["AB", "BC"], ["ABCAB"])).toBe(false);
-    expect(isBetter(["AB", "BC"], ["ABC", "CD"])).toBe(true);
-    expect(isBetter(["AB", "BD"], ["AB", "BC"])).toBe(false);
+    expect(isBetterSolution(["ABCAB"], ["AB", "BC"])).toBe(true);
+    expect(isBetterSolution(["AB", "BC"], ["ABCAB"])).toBe(false);
+    expect(isBetterSolution(["AB", "BC"], ["ABC", "CD"])).toBe(true);
+    expect(isBetterSolution(["AB", "BD"], ["AB", "BC"])).toBe(false);
   });
 });
 

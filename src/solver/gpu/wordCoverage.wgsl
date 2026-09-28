@@ -28,13 +28,16 @@ struct Uniforms {
 // [solution count, next chain count], read back together in one copy
 @group(0) @binding(5) var<storage, read_write> counts: array<atomic<u32>, 2>;
 
-@compute @workgroup_size(256)
+// Set by the host from device limits (see gpuSolver.ts)
+override WORKGROUP_SIZE: u32;
+
+@compute @workgroup_size(WORKGROUP_SIZE)
 fn extendChains(
   @builtin(global_invocation_id) gid: vec3<u32>,
   @builtin(num_workgroups) nwg: vec3<u32>,
 ) {
-  // 2D dispatch flattened: idx = y * (wgX * 256) + x
-  let idx = gid.y * (nwg.x * 256u) + gid.x;
+  // 2D dispatch flattened: idx = y * (wgX * WORKGROUP_SIZE) + x
+  let idx = gid.y * (nwg.x * WORKGROUP_SIZE) + gid.x;
   let totalWork = uniforms.chainCount * uniforms.wordCount;
   if (idx >= totalWork) { return; }
 

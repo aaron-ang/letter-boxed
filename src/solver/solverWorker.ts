@@ -9,7 +9,7 @@ import {
   type ValidWord,
 } from "./types";
 
-const WORD_LIST_URL = "/letter-boxed/word_list.txt";
+const WORD_LIST_URL = `${import.meta.env.BASE_URL}word_list.txt`;
 
 let gpuSolver: GPUSolver | null | undefined; // undefined = not checked yet
 
@@ -70,18 +70,22 @@ async function handleRequest(request: SolverRequest): Promise<SolverResponse> {
     return { type: "solveResult", ...result };
   }
 
-  // findBest — try GPU, then CPU word-level, then CPU backtracking
+  // findBest — try GPU, then the CPU word-level search
   const gpu = await getGPUSolver();
   if (gpu) {
     try {
       const t2 = performance.now();
-      const result = await gpu.findBest(validWords, request.numWords, ctx.allCoveredMask);
+      const { truncated, ...result } = await gpu.findBest(
+        validWords,
+        request.numWords,
+        ctx.allCoveredMask,
+      );
       const gpuTime = performance.now() - t2;
       console.log(`[Solver] findBest() GPU completed in ${gpuTime.toFixed(1)}ms`);
-      if (result.success) {
+      if (!truncated) {
         return { type: "findBestResult", ...result };
       }
-      console.log("[Solver] GPU found no solution, falling back to CPU");
+      console.warn("[Solver] GPU dropped results past its buffer caps, re-running on CPU");
     } catch (err) {
       console.warn("[Solver] GPU findBest failed, falling back to CPU:", err);
     }
@@ -92,17 +96,7 @@ async function handleRequest(request: SolverRequest): Promise<SolverResponse> {
   const cpuResult = Solver.findBestCPU(validWords, request.numWords, ctx.allCoveredMask);
   const cpuWordTime = performance.now() - t3;
   console.log(`[Solver] findBest() CPU word-level completed in ${cpuWordTime.toFixed(1)}ms`);
-  if (cpuResult.success) {
-    return { type: "findBestResult", ...cpuResult };
-  }
-
-  // Last resort: character-level backtracking (for 4-5 word solutions)
-  const t4 = performance.now();
-  const solver = new Solver(ctx, dictionary);
-  const fbResult = solver.findBestBacktracking(request.numWords);
-  const btTime = performance.now() - t4;
-  console.log(`[Solver] findBest() CPU backtracking completed in ${btTime.toFixed(1)}ms`);
-  return { type: "findBestResult", ...fbResult };
+  return { type: "findBestResult", ...cpuResult };
 }
 
 self.onmessage = async (e: MessageEvent<SolverRequest>) => {

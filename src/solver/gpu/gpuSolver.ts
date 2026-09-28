@@ -4,7 +4,13 @@ import shaderSource from "./wordCoverage.wgsl?raw";
 // Chain layout: [w0, w1, w2, w3, w4, coverageMask, lastWordIdx, wordCount, totalChars]
 const CHAIN_STRIDE = 9;
 const CHAIN_BYTES = CHAIN_STRIDE * 4;
-const WORKGROUP_SIZE = 256;
+// WebGPU default limit for maxComputeInvocationsPerWorkgroup; clamped to device limits
+const PREFERRED_WORKGROUP_SIZE = 256;
+// Share of maxStorageBufferBindingSize given to each buffer
+const SOLUTION_BUFFER_FRACTION = 0.05;
+const CHAIN_BUFFER_FRACTION = 0.5;
+// Cap on solutions collected per pass; plenty to pick the best from
+const MAX_SOLUTIONS = 65_536;
 
 export interface Solution {
   words: number[];
@@ -28,18 +34,37 @@ export function findOneWordSolutions(validWords: ValidWord[], allCoveredMask: nu
 interface PassResult {
   solutions: Solution[];
   nextCount: number;
+  /** A buffer cap was hit, so some chains or solutions were dropped. */
+  truncated: boolean;
+}
+
+/** Find Best result; `truncated` means the answer may be incomplete. */
+export interface GPUResult {
+  success: boolean;
+  data: string[];
+  truncated: boolean;
 }
 
 export class GPUSolver {
   private device: GPUDevice;
   private maxSolutions: number;
   private maxChains: number;
+  private workgroupSize: number;
 
   private constructor(device: GPUDevice) {
     this.device = device;
-    const cap = device.limits.maxStorageBufferBindingSize;
-    this.maxSolutions = Math.min(Math.floor((cap * 0.05) / CHAIN_BYTES), 65_536);
-    this.maxChains = Math.floor((cap * 0.5) / CHAIN_BYTES);
+    const { limits } = device;
+    const cap = limits.maxStorageBufferBindingSize;
+    this.maxSolutions = Math.min(
+      Math.floor((cap * SOLUTION_BUFFER_FRACTION) / CHAIN_BYTES),
+      MAX_SOLUTIONS,
+    );
+    this.maxChains = Math.floor((cap * CHAIN_BUFFER_FRACTION) / CHAIN_BYTES);
+    this.workgroupSize = Math.min(
+      PREFERRED_WORKGROUP_SIZE,
+      limits.maxComputeInvocationsPerWorkgroup,
+      limits.maxComputeWorkgroupSizeX,
+    );
   }
 
   static async create(): Promise<GPUSolver | null> {
@@ -58,14 +83,16 @@ export class GPUSolver {
     validWords: ValidWord[],
     numWords: number,
     allCoveredMask: number,
-  ): Promise<{ success: boolean; data: string[] }> {
+  ): Promise<GPUResult> {
     const n = validWords.length;
-    if (n === 0 || numWords < 1) return { success: false, data: [] };
+    if (n === 0 || numWords < 1) return { success: false, data: [], truncated: false };
+    if (n > this.maxChains)
+      throw new Error(`${n} words exceed the chain buffer (${this.maxChains})`);
 
     const oneWord = findOneWordSolutions(validWords, allCoveredMask);
     if (oneWord.length > 0) {
       console.log(`[GPU] Pass 0: found ${oneWord.length} 1-word solutions (CPU check)`);
-      return this.selectBest(oneWord, validWords);
+      return { ...this.selectBest(oneWord, validWords), truncated: false };
     }
 
     const pipeline = this.createPipeline();
@@ -74,11 +101,12 @@ export class GPUSolver {
     const countsBuf = this.counterBuffer();
 
     // Chains stay on the GPU between passes: each pass reads one buffer and writes the other,
-    // and only the counts (plus any solutions) come back to the CPU.
-    const firstChains = this.uploadStorage(this.initOneWordChains(validWords));
-    let input = firstChains;
+    // then the two swap roles. Only the counts (plus any solutions) come back to the CPU.
+    let input = this.emptyStorage(this.maxChains * CHAIN_BYTES);
     let output = this.emptyStorage(this.maxChains * CHAIN_BYTES);
+    this.device.queue.writeBuffer(input, 0, this.initOneWordChains(validWords));
     let chainCount = n;
+    let truncated = false;
     const solutions: Solution[] = [];
 
     for (let pass = 0; pass < numWords - 1 && chainCount > 0; pass++) {
@@ -94,6 +122,7 @@ export class GPUSolver {
         maxWords: numWords,
       });
 
+      truncated ||= result.truncated;
       solutions.push(...result.solutions);
       if (solutions.length > 0) {
         console.log(`[GPU] Pass ${pass + 1}: found ${result.solutions.length} solutions`);
@@ -102,20 +131,22 @@ export class GPUSolver {
       console.log(`[GPU] Pass ${pass + 1}: ${result.nextCount} incomplete chains`);
 
       chainCount = result.nextCount;
-      const next = input === firstChains ? this.emptyStorage(this.maxChains * CHAIN_BYTES) : input;
-      input = output;
-      output = next;
+      [input, output] = [output, input];
     }
 
-    for (const buf of [wordBuffer, solBuf, countsBuf, firstChains, input, output]) buf.destroy();
-    return this.selectBest(solutions, validWords);
+    for (const buf of [wordBuffer, solBuf, countsBuf, input, output]) buf.destroy();
+    return { ...this.selectBest(solutions, validWords), truncated };
   }
 
   private createPipeline(): GPUComputePipeline {
     const module = this.device.createShaderModule({ code: shaderSource });
     return this.device.createComputePipeline({
       layout: "auto",
-      compute: { module, entryPoint: "extendChains" },
+      compute: {
+        module,
+        entryPoint: "extendChains",
+        constants: { WORKGROUP_SIZE: this.workgroupSize },
+      },
     });
   }
 
@@ -178,7 +209,7 @@ export class GPUSolver {
     });
 
     const maxWgPerDim = this.device.limits.maxComputeWorkgroupsPerDimension;
-    const totalWg = Math.ceil((p.chainCount * p.wordCount) / WORKGROUP_SIZE);
+    const totalWg = Math.ceil((p.chainCount * p.wordCount) / this.workgroupSize);
     const wgX = Math.min(totalWg, maxWgPerDim);
     const wgY = Math.ceil(totalWg / maxWgPerDim);
 
@@ -220,7 +251,8 @@ export class GPUSolver {
       solutions.push({ words: wordIndices, totalChars: data[off + 8] });
     }
 
-    return { solutions, nextCount };
+    const truncated = rawSolCount > this.maxSolutions || rawNextCount > this.maxChains;
+    return { solutions, nextCount, truncated };
   }
 
   private uploadStorage(data: Uint32Array): GPUBuffer {
@@ -244,7 +276,7 @@ export class GPUSolver {
   private emptyStorage(byteSize: number): GPUBuffer {
     return this.device.createBuffer({
       size: byteSize,
-      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
     });
   }
 
