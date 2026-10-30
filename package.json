@@ -21,6 +21,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "biome check src/",
+    "typecheck": "tsc --noEmit",
     "lint:fix": "biome check --write src/",
     "format": "biome format --write src/",
     "test": "vitest run",
