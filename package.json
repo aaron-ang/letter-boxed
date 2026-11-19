@@ -62,5 +62,5 @@
     "postcss": ">=8.4.31",
     "nth-check": ">=2.0.1"
   },
-  "packageManager": "bun@1.4.4"
+  "packageManager": "bun@1.4.5"
 }
